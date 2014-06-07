@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<script src="coquette.js"></script>
+<script src="sylvester.js"></script>
+<canvas id="canvas"></canvas>
+<script>
+var Game = function() {
+  this.c = new Coquette(this, "canvas", 500, 500, "#000", true);
+
+  // player
+  var player = this.c.entities.create(Person, { 
+    center: { x:256, y:110 }, 
+    color:"#f07",
+    update: function() {
+      if (!this.gameOver) {
+        var v = Vector.create([0, 0, 0]);
+        if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)) v = v.subtract(Vector.j);
+        if (this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)) v = v.add(Vector.j);
+        if (this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)) v = v.subtract(Vector.i);
+        if (this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW)) v = v.add(Vector.i);
+
+        var speed = 2.2;
+        if (this.c.inputter.isDown(this.c.inputter.SHIFT)) speed = 3.2;
+        v = v.toUnitVector().x(speed);
+        this.center.x += v.dot(Vector.i) || 0;
+        this.center.y += v.dot(Vector.j) || 0;
+      }
+
+      var win = true;
+      this.c.entities.all(Robot).forEach(function (robot) {
+        if (!robot.wreck) win = false;
+      });
+      if (win) {
+        if (!this.gameOver) console.log('You win!');
+        this.gameOver = true;
+      }
+    },
+    collision: function(other) {
+      if (!this.gameOver) console.log('You lose!');
+      this.gameOver = true;
+    }
+  });
+
+  // robots
+  var starts = [];
+  var robots = 10;
+  for (var i=0; i<robots; i++) {
+    starts.push({
+      x: Math.random() * 500,
+      y: Math.random() * 500
+    });
+  }
+  starts.forEach(function (start) {
+    this.c.entities.create(Robot, {
+      center: start,
+      color: "#099",
+      update: function() {
+        if (!this.wreck
+           && (this.c.inputter.isDown(this.c.inputter.UP_ARROW)
+               || this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)
+               || this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)
+               || this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW))) {
+          if (true) {
+            // Direct method
+            var p = Vector.create([player.center.x, player.center.y, 0]);
+            var r = Vector.create([this.center.x, this.center.y, 0]);
+            var v = p.subtract(r);
+
+            v = v.toUnitVector().x(2.4);
+            this.center.x += v.dot(Vector.i) || 0;
+            this.center.y += v.dot(Vector.j) || 0;
+          }
+          if (false) {
+            // Compass method
+            var x = 0;
+            var y = 0;
+            var dx = player.center.x - this.center.x;
+            var dy = player.center.y - this.center.y;
+            if (dx < -1) x = -1;
+            else if (dx > 1) x = 1;
+            if (dy < -1) y = -1;
+            else if (dy > 1) y = 1;
+
+            var v = Vector.create([x, y, 0]);
+            v = v.toUnitVector().x(2.6);
+            this.center.x += v.dot(Vector.i) || 0;
+            this.center.y += v.dot(Vector.j) || 0;
+          }
+        }
+      },
+      collision: function(other) {
+        this.wreck = true;
+      }
+    });
+  }.bind(this));
+};
+
+var Person = function(game, settings) {
+  this.c = game.c;
+  for (var i in settings) {
+    this[i] = settings[i];
+  }
+
+  this.size = { x:9, y:9 };
+  this.draw = function(ctx) {
+    ctx.fillStyle = settings.color;
+    ctx.fillRect(this.center.x - this.size.x / 2,
+                 this.center.y - this.size.y / 2,
+                 this.size.x,
+                 this.size.y);
+  };
+};
+
+var Robot = function(game, settings) {
+  this.c = game.c;
+  for (var i in settings) {
+    this[i] = settings[i];
+  }
+
+  this.size = { x:9, y:9 };
+  this.draw = function(ctx) {
+    ctx.fillStyle = settings.color;
+    ctx.fillRect(this.center.x - this.size.x / 2,
+                 this.center.y - this.size.y / 2,
+                 this.size.x,
+                 this.size.y);
+  };
+};
+
+window.addEventListener('load', function() {
+  new Game();
+});
+</script>
