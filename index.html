@@ -1,43 +1,246 @@
 <!DOCTYPE html>
 <script src="coquette.js"></script>
 <script src="sylvester.js"></script>
-<canvas id="canvas"></canvas>
+<link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
+<style>
+  body {
+    text-align: center;
+    font-family: "Press Start 2P";
+    color: #222;
+    background: url('bkg.gif') 0 / 150px repeat; /* courtesy of http://home.earthlink.net/~hube02/backgrounds1.html */
+    padding: 1em 0 2em 0;
+  }
+
+  h1 {
+    font-family: "Press Start 2P";
+  }
+  h1:hover {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+  }
+  @keyframes flash {
+    from {
+      color: #fbc32d;
+    }
+    to {
+      color: #f6e636;
+    }
+  }
+
+  p {
+    max-width: 500px;
+    margin: 1em auto;
+  }
+
+  dl {
+    width: 400px;
+    margin: 1em auto;
+  }
+  dt {
+    float: left;
+    background-color: lightgray;
+    border-radius: 2px;
+    padding: 0.1em 0.2em;
+    margin: 0.2em 0.2em;
+    box-shadow: #222 1px 1px 1px;
+  }
+  dd {
+    display: block;
+    text-align: left;
+    margin-left: 200px;
+    height: 2.2em;
+    line-height: 2.2em;
+  }
+
+  .container {
+    position: relative;
+  }
+
+  .result {
+    display: none;
+    position: absolute;
+    width: 500px;
+    height: 1em;
+    top: 50%;
+    left: 50%;
+    margin-left: -250px;
+    margin-top: -0.5em;
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+  }
+</style>
+
+<h1>ROBORAMPAGE</h1>
+<div class="container">
+  <canvas id="canvas"></canvas>
+  <h1 id="win" class="result">You win!</h1>
+  <h1 id="lose" class="result">You lose.</h1>
+</div>
+<p>The robots are after you! Get them to crash before they get you.</p>
+<dl>
+  <dt>▲</dt>
+  <dt>◀</dt>
+  <dt>▼</dt>
+  <dt>▶</dt>
+  <dd>to move</dd>
+  <dt>Shift</dt>
+  <dd>to run</dd>
+  <dt>Space</dt>
+  <dd>to teleport</dd>
+</dl>
+
+
 <script>
-var Game = function() {
-  this.c = new Coquette(this, "canvas", 500, 500, "#000", true);
+
+function Base() {}
+Base.prototype.init = function (game, settings) {
+  this.game = game;
+  this.c = game.c;
+  for (var i in settings) {
+    this[i] = settings[i];
+  }
+}
+Base.prototype.draw = function(ctx) {
+  ctx.fillStyle = this.color;
+  ctx.fillRect(this.center.x - this.size.x / 2,
+               this.center.y - this.size.y / 2,
+               this.size.x,
+               this.size.y);
+};
+
+function Person(game, settings) {
+  this.size = { x:9, y:9 };
+  this.init(game, settings);
+  return this;
+}
+Person.prototype = new Base();
+Person.prototype.update = function() {
+  if (this.c.inputter.isDown(this.c.inputter.SPACE)) {
+    if (!this.warped) {
+      this.center.x = Math.random() * this.game.width;
+      this.center.y = Math.random() * this.game.height;
+      this.warped = true;
+    }
+  }
+  else {
+    this.warped = false;
+    var v = Vector.create([0, 0, 0]);
+    if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)) v = v.subtract(Vector.j);
+    if (this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)) v = v.add(Vector.j);
+    if (this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)) v = v.subtract(Vector.i);
+    if (this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW)) v = v.add(Vector.i);
+
+    var speed = this.speed.walk
+    if (this.c.inputter.isDown(this.c.inputter.SHIFT)) speed = this.speed.run;
+    v = v.toUnitVector().x(speed);
+    this.center.x += v.dot(Vector.i) || 0;
+    this.center.y += v.dot(Vector.j) || 0;
+  }
+};
+Person.prototype.collision = function(other, type) {
+  this.dead = true;
+};
+
+function Robot(game, settings) {
+  this.size = { x:9, y:9 };
+  this.init(game, settings);
+  this.color = this.colors['alive'];
+
+  this.strategies = {
+    direct: function directAttack() {
+      var p = Vector.create([this.target.center.x, this.target.center.y, 0]);
+      var r = Vector.create([this.center.x, this.center.y, 0]);
+      var v = p.subtract(r);
+
+      v = v.toUnitVector().x(this.speed.walk);
+      this.center.x += v.dot(Vector.i) || 0;
+      this.center.y += v.dot(Vector.j) || 0;
+    },
+    compass: function compassAttack() {
+      var x = 0;
+      var y = 0;
+      var dx = this.target.center.x - this.center.x;
+      var dy = this.target.center.y - this.center.y;
+      if (dx < -1) x = -1;
+      else if (dx > 1) x = 1;
+      if (dy < -1) y = -1;
+      else if (dy > 1) y = 1;
+
+      var v = Vector.create([x, y, 0]);
+      v = v.toUnitVector().x(this.speed.walk);
+      this.center.x += v.dot(Vector.i) || 0;
+      this.center.y += v.dot(Vector.j) || 0;
+    }
+  };
+
+  this.strategy = this.strategy || 'direct';
+  this.move = this.strategies[this.strategy];
+  this.wait = function () {};
+  return this;
+}
+Robot.prototype = new Base();
+Robot.prototype.update = function() {
+  if (!this.wreck
+      && (this.c.inputter.isDown(this.c.inputter.UP_ARROW)
+        || this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)
+        || this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)
+        || this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW))) this.move();
+  else this.wait();
+};
+Robot.prototype.collision = function(other, type) {
+  if (other instanceof Robot) {
+    this.wreck = true;
+    this.color = this.colors['dead'];
+  }
+};
+
+var Game = function(opts) {
+  opts = opts || {};
+
+  var BKG_C = "#002b36";
+  var PLAYER_C = "#2aa198";
+  var ROBOT_C = {
+    dead: "#dc322f",
+    alive: "#d33682"
+  };
+
+  this.width = 500;
+  this.height = 500;
+
+  this.win = opts.win || function () { console.log('You win!'); };
+  this.lose = opts.lose || function () { console.log('You lose.'); };
+
+  this.update = function (interval) {
+    var allDead = true;
+    this.c.entities.all(Person).forEach(function (person) {
+      if (!person.dead) allDead = false;
+    });
+    if (allDead) {
+      this.lose();
+      this.c.ticker.stop();
+    }
+
+    var allWrecked = true;
+    this.c.entities.all(Robot).forEach(function (robot) {
+      if (!robot.wreck) allWrecked = false;
+    });
+    if (allWrecked) {
+      this.win();
+      this.c.ticker.stop();
+    }
+  };
+
+  this.c = new Coquette(this, "canvas", this.width, this.height, BKG_C, true);
 
   // player
   var player = this.c.entities.create(Person, { 
     center: { x:256, y:110 }, 
-    color:"#f07",
-    update: function() {
-      if (!this.gameOver) {
-        var v = Vector.create([0, 0, 0]);
-        if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)) v = v.subtract(Vector.j);
-        if (this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)) v = v.add(Vector.j);
-        if (this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)) v = v.subtract(Vector.i);
-        if (this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW)) v = v.add(Vector.i);
-
-        var speed = 2.2;
-        if (this.c.inputter.isDown(this.c.inputter.SHIFT)) speed = 3.2;
-        v = v.toUnitVector().x(speed);
-        this.center.x += v.dot(Vector.i) || 0;
-        this.center.y += v.dot(Vector.j) || 0;
-      }
-
-      var win = true;
-      this.c.entities.all(Robot).forEach(function (robot) {
-        if (!robot.wreck) win = false;
-      });
-      if (win) {
-        if (!this.gameOver) console.log('You win!');
-        this.gameOver = true;
-      }
-    },
-    collision: function(other) {
-      if (!this.gameOver) console.log('You lose!');
-      this.gameOver = true;
-    }
+    speed: { walk: 2.4, run: 3.6 },
+    color: PLAYER_C
   });
 
   // robots
@@ -52,81 +255,22 @@ var Game = function() {
   starts.forEach(function (start) {
     this.c.entities.create(Robot, {
       center: start,
-      color: "#099",
-      update: function() {
-        if (!this.wreck
-           && (this.c.inputter.isDown(this.c.inputter.UP_ARROW)
-               || this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)
-               || this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)
-               || this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW))) {
-          if (true) {
-            // Direct method
-            var p = Vector.create([player.center.x, player.center.y, 0]);
-            var r = Vector.create([this.center.x, this.center.y, 0]);
-            var v = p.subtract(r);
-
-            v = v.toUnitVector().x(2.4);
-            this.center.x += v.dot(Vector.i) || 0;
-            this.center.y += v.dot(Vector.j) || 0;
-          }
-          if (false) {
-            // Compass method
-            var x = 0;
-            var y = 0;
-            var dx = player.center.x - this.center.x;
-            var dy = player.center.y - this.center.y;
-            if (dx < -1) x = -1;
-            else if (dx > 1) x = 1;
-            if (dy < -1) y = -1;
-            else if (dy > 1) y = 1;
-
-            var v = Vector.create([x, y, 0]);
-            v = v.toUnitVector().x(2.6);
-            this.center.x += v.dot(Vector.i) || 0;
-            this.center.y += v.dot(Vector.j) || 0;
-          }
-        }
-      },
-      collision: function(other) {
-        this.wreck = true;
-      }
+      speed: { walk: 2.6 },
+      strategy: 'direct',
+      colors: ROBOT_C,
+      target: player
     });
   }.bind(this));
 };
 
-var Person = function(game, settings) {
-  this.c = game.c;
-  for (var i in settings) {
-    this[i] = settings[i];
-  }
-
-  this.size = { x:9, y:9 };
-  this.draw = function(ctx) {
-    ctx.fillStyle = settings.color;
-    ctx.fillRect(this.center.x - this.size.x / 2,
-                 this.center.y - this.size.y / 2,
-                 this.size.x,
-                 this.size.y);
-  };
-};
-
-var Robot = function(game, settings) {
-  this.c = game.c;
-  for (var i in settings) {
-    this[i] = settings[i];
-  }
-
-  this.size = { x:9, y:9 };
-  this.draw = function(ctx) {
-    ctx.fillStyle = settings.color;
-    ctx.fillRect(this.center.x - this.size.x / 2,
-                 this.center.y - this.size.y / 2,
-                 this.size.x,
-                 this.size.y);
-  };
-};
-
 window.addEventListener('load', function() {
-  new Game();
+  new Game({
+    win: function () {
+      document.getElementById('win').style.display = "initial";
+    },
+    lose: function () {
+      document.getElementById('lose').style.display = "initial";
+    }
+  });
 });
 </script>
