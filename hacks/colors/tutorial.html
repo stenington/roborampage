@@ -60,7 +60,40 @@
   <p>
     That worked because <code>midnightblue</code> is a CSS color keyword. Check out 
     <a href="http://www.w3.org/TR/css3-color/#colorunits">this page</a> to learn more
-    about the basic and extended color keywords. <code>peachpuff</code> robots on a field
-    of <code>salmon</code>? Go for it!
+    about the basic and extended color keywords.
+  </p>
+  <p>
+    <code>peachpuff</code> robots on a field
+    of <code>salmon</code>? Go for it, weirdo.
+  </p>
+  <img src="puke.gif" alt="Puking rainbows, my friend.">
+</section>
+<section>
+  <h1>Other colors</h1>
+  <p>
+    There are other ways to talk about colors that the game can understand as well. 
+    Take another look at the <a href="http://www.w3.org/TR/css3-color/#colorunits">CSS Color Module Level 3</a>
+    page I sent you to a moment ago. Anything look familiar? The section on <strong>RGB color values</strong>
+    will explain what the original <code>"#002b36"</code> business was all about.
+  </p>
+  <p>
+    Experiment for a while with expressing colors in different ways. Color keywords can only do so much
+    for you, but with RGB or HSL you can get a little more specific about the shade of mauve that would
+    be just perfect for your palette!
+  </p>
+</section>
+<section>
+  <h1>Going deeper</h1>
+  <p>
+    So by now your game should be looking pretty great, but maybe you're wondering why you have to express colors
+    in these weird and varied ways? Let's go a little bit deeper.
+  </p>
+  <p>
+    Under the hood, the game is using an element called a <code>canvas</code> to draw everything to the screen, and
+    the colors you are setting are being set as the <code>fillStyle</code> to use on that canvas. 
+    <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Applying_styles_and_colors">This
+    MDN article</a> talks all about <code>fillStyle</code>, and as you can see, one of the things it can accept
+    is a string representing a CSS color. And where do you go to learn about representing CSS colors?
+    THE <a href="http://www.w3.org/TR/css3-color/#colorunits">CSS COLOR MODULE LEVEL 3</a>!!!
   </p>
 </section>
