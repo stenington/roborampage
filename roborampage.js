@@ -15,6 +15,7 @@ Base.prototype.init = function (game, settings) {
   for (var i in settings) {
     this[i] = settings[i];
   }
+  this.color = this.colors['alive'];
 };
 
 Base.prototype.draw = function(ctx) {
@@ -85,7 +86,6 @@ Person.prototype.specialKeys = {
 
 function Robot(game, settings) {
   this.init(game, settings);
-  this.color = this.colors['alive'];
   if (this.attackStrategy === 'random') {
     var names = Object.keys(this.attacks);
     this.attackStrategy = names[Math.floor(Math.random() * names.length)];
@@ -156,6 +156,17 @@ Robot.prototype.waits = {
   wait: function() {}
 };
 
+function extend() {
+  var args = Array.prototype.slice.apply(arguments);
+  return args.reduceRight(function(prev, curr, idx, arr) {
+    if (!curr) return prev;
+    for(key in curr) {
+      prev[key] = curr[key];
+    }
+    return prev;
+  }, {});
+}
+
 // Define the Game
 function Game(settings) {
   settings = settings || {};
@@ -165,39 +176,38 @@ function Game(settings) {
 
   this.win = this.win || function () {};
   this.lose = this.lose || function () {};
+  this.enemies = this.enemies || 10;
 
-  this.c = new Coquette(this, "canvas", this.width, this.height, this.colors.background, true);
+  this.c = new Coquette(this, "canvas", this.width, this.height, this.background, true);
 
   // Our intrepid player
-  var player = this.c.entities.create(Person, { 
+  var playerDefaults = { 
     center: { x:this.width/2, y:this.height/2 }, 
-    size: this.sizes.player,
-    speed: this.speeds.player,
-    color: this.colors.player.alive
-  });
+    size: { x:9, y:9 },
+    speed: { walk:2.4, run:3.6 },
+    colors: { alive:"#2aa198", dead:"#2aa198" }
+  };
+  var player = this.c.entities.create(Person, extend(playerDefaults, settings.player));
 
   // The evil robots!
-  var starts = [];
-  var wait = 'roam';
-  var attack = 'compass';
-  for (var i=0; i<this.robots; i++) {
-    starts.push({
-      x: Math.random() * 500,
-      y: Math.random() * 500
-    });
+  var robotDefaults = {
+    size: { x:9, y:9 },
+    speed: { walk: 2.6 },
+    attackStrategy: 'compass',
+    waitStrategy: 'roam',
+    colors: { alive: "#d33682", dead:  "#dc322f" },
+    target: player
+  };
+  for (var i=0; i<this.enemies; i++) {
+    this.c.entities.create(Robot, extend({
+      center: {
+        x: Math.random() * 500,
+        y: Math.random() * 500
+      }
+    }, robotDefaults, settings.robot));
   }
-  starts.forEach(function (start) {
-    this.c.entities.create(Robot, {
-      center: start,
-      size: this.sizes.robot,
-      speed: this.speeds.robot,
-      attackStrategy: attack,
-      waitStrategy: wait,
-      colors: this.colors.robot,
-      target: player
-    });
-  }.bind(this));
 };
+
 Game.prototype.update = function(interval) {
   var allDead = true;
   this.c.entities.all(Person).forEach(function (person) {

@@ -27,10 +27,11 @@
 </section>
 <section class="hack">
   <h2>Hack</h2>
-  <p>Hack this version <a href="https://thimble.webmaker.org/project/59304/remix">in Thimble</a> or follow one of these tutorials:</p>
+  <p>Hack the game <a href="https://thimble.webmaker.org/project/59304/remix">in Thimble</a> or follow one of these tutorials:</p>
   <ul>
+    <li><a href="#">Choose your colors</a> <small>Coming soon</small></li>
     <li><a href="#">Add your own graphics</a> <small>Coming soon</small></li>
-    <li><a href="#">New player abilities</a> <small>Coming soon</small></li>
+    <li><a href="#">Create player abilities</a> <small>Coming soon</small></li>
     <li><a href="#">Change the robot AI</a> <small>Coming soon</small></li>
   </ul>
 </section>
@@ -48,37 +49,8 @@ window.addEventListener('load', function() {
   new Game({
     width: 500,
     height: 500,
-    colors: {
-      background: "#002b36",
-      player: {
-        alive: "#2aa198",
-        dead:  "#2aa198"
-      },
-      robot: {
-        alive: "#d33682",
-        dead:  "#dc322f"
-      }
-    },
-    sizes: {
-      player: {
-        x: 9,
-        y: 9
-      },
-      robot: {
-        x: 9,
-        y: 9
-      }
-    },
-    speeds: {
-      player: {
-        walk: 2.4,
-        run:  3.6
-      },
-      robot: {
-        walk: 2.6
-      }
-    },
-    robots: 10,
+    background: "#002b36",
+    enemies: 10,
     win: function () {
       showMessage("You win!");
     },
