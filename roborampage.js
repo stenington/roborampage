@@ -158,7 +158,7 @@ Robot.prototype.waits = {
 
 function extend() {
   var args = Array.prototype.slice.apply(arguments);
-  return args.reduceRight(function(prev, curr, idx, arr) {
+  return args.reduce(function(prev, curr, idx, arr) {
     if (!curr) return prev;
     for(key in curr) {
       prev[key] = curr[key];
