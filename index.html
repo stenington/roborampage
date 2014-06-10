@@ -51,6 +51,19 @@ window.addEventListener('load', function() {
     height: 500,
     background: "#002b36",
     enemies: 10,
+    player: {
+      center: { x: 250, y: 250 },
+      size: { x: 9, y: 9 },
+      speed: { walk: 2.4, run: 3.6 },
+      colors: { alive: "#2aa198", dead: "#2aa198" }
+    },
+    robot: {
+      size: { x: 9, y: 9 },
+      speed: { walk: 2.6 },
+      attackStrategy: 'compass',
+      waitStrategy: 'roam',
+      colors: { alive: "#d33682", dead:  "#dc322f" },
+    },
     win: function () {
       showMessage("You win!");
     },
