@@ -178,8 +178,8 @@ function Game(settings) {
 
   // The evil robots!
   var starts = [];
-  var wait = ['wait', 'roam', 'random'][Math.floor(Math.random() * 3)];
-  var attack = ['compass', 'direct', 'random'][Math.floor(Math.random() * 3)];
+  var wait = 'roam';
+  var attack = 'compass';
   for (var i=0; i<this.robots; i++) {
     starts.push({
       x: Math.random() * 500,

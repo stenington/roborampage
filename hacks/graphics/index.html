@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<script src="coquette.js"></script>
-<script src="roborampage.js"></script>
+<script src="../../coquette.js"></script>
+<script src="../../roborampage.js"></script>
 <link href='https://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
-<link href="style.css" rel="stylesheet" type="text/css">
+<link href="../../style.css" rel="stylesheet" type="text/css">
 
 <h1>ROBORAMPAGE</h1>
 <div class="container">
@@ -37,7 +37,25 @@
 
 <small class="attribution">By <a href="https://twitter.com/stenington">@stenington</a></small>
 
+<img id="robot-image" src="robo.png">
+<img id="player-image" src="player.png">
 <script>
+Robot.prototype.draw = function(ctx) {
+  var img = document.getElementById('robot-image');
+  ctx.drawImage(img, this.center.x - this.size.x / 2,
+                     this.center.y - this.size.y / 2,
+                     this.size.x,
+                     this.size.y);
+};
+
+Person.prototype.draw = function(ctx) {
+  var img = document.getElementById('player-image');
+  ctx.drawImage(img, this.center.x - this.size.x / 2,
+                     this.center.y - this.size.y / 2,
+                     this.size.x,
+                     this.size.y);
+};
+
 function showMessage(msg) {
   var el = document.getElementById('message');
   el.style.display = "initial";
@@ -61,12 +79,12 @@ window.addEventListener('load', function() {
     },
     sizes: {
       player: {
-        x: 9,
-        y: 9
+        x: 32,
+        y: 32 
       },
       robot: {
-        x: 9,
-        y: 9
+        x: 32,
+        y: 32 
       }
     },
     speeds: {
@@ -78,7 +96,7 @@ window.addEventListener('load', function() {
         walk: 2.6
       }
     },
-    robots: 10,
+    robots: 6,
     win: function () {
       showMessage("You win!");
     },
