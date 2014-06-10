@@ -15,7 +15,7 @@ Base.prototype.init = function (game, settings) {
   for (var i in settings) {
     this[i] = settings[i];
   }
-}
+};
 
 Base.prototype.draw = function(ctx) {
   ctx.fillStyle = this.color;
@@ -23,6 +23,20 @@ Base.prototype.draw = function(ctx) {
                this.center.y - this.size.y / 2,
                this.size.x,
                this.size.y);
+};
+
+Base.prototype.keepInBounds = function() {
+  this.center.x = Math.max(0, this.center.x);
+  this.center.x = Math.min(this.game.width, this.center.x);
+  this.center.y = Math.max(0, this.center.y);
+  this.center.y = Math.min(this.game.height, this.center.y);
+};
+
+Base.prototype.moveBy = function (direction, magnitude) {
+  var v = Coquette.Collider.Maths.unitVector(direction);
+  v = Coquette.Collider.Maths.scaleVector(v, magnitude);
+  this.center.x += v.x;
+  this.center.y += v.y;
 };
 
 
@@ -35,35 +49,25 @@ function Person(game, settings) {
 Person.prototype = new Base();
 
 Person.prototype.update = function() {
-  if (this.c.inputter.isDown(this.c.inputter.SPACE)) {
+  if (false && this.c.inputter.isDown(this.c.inputter.SPACE)) {
     if (!this.warped) {
       this.center.x = Math.random() * this.game.width;
       this.center.y = Math.random() * this.game.height;
       this.warped = true;
     }
   }
-  else {
-    this.warped = false;
-    var v = {x:0, y:0};
-    if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)) v.y += -1;
-    if (this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)) v.y += 1;
-    if (this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)) v.x += -1;
-    if (this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW)) v.x += 1;
+  var v = {x:0, y:0};
+  if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)) v.y += -1;
+  if (this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)) v.y += 1;
+  if (this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)) v.x += -1;
+  if (this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW)) v.x += 1;
 
-    if (!Coquette.Collider.Maths.magnitude(v)) return;
-    
-    var speed = this.speed.walk
-    if (this.c.inputter.isDown(this.c.inputter.SHIFT)) speed = this.speed.run;
-    v = Coquette.Collider.Maths.unitVector(v);
-    v = Coquette.Collider.Maths.scaleVector(v, speed);
-    this.center.x += v.x;
-    this.center.y += v.y;
-    
-    this.center.x = Math.max(0, this.center.x);
-    this.center.x = Math.min(this.game.width, this.center.x);
-    this.center.y = Math.max(0, this.center.y);
-    this.center.y = Math.min(this.game.height, this.center.y);
-  }
+  if (!Coquette.Collider.Maths.magnitude(v)) return;
+  
+  var speed = this.speed.walk
+  if (this.c.inputter.isDown(this.c.inputter.SHIFT)) speed = this.speed.run;
+  this.moveBy(v, speed);
+  this.keepInBounds(); 
 };
 
 Person.prototype.collision = function(other, type) {
@@ -109,11 +113,7 @@ Robot.prototype.collision = function(other, type) {
 Robot.prototype.attacks = {
   direct: function directAttack() {
     var v = Coquette.Collider.Maths.vectorTo(this.center, this.target.center);    
-
-    v = Coquette.Collider.Maths.unitVector(v);
-    v = Coquette.Collider.Maths.scaleVector(v, this.speed.walk);
-    this.center.x += v.x;
-    this.center.y += v.y;
+    this.moveBy(v, this.speed.walk);
   },
   compass: function compassAttack() {
     var v = {x:0, y:0};
@@ -123,11 +123,7 @@ Robot.prototype.attacks = {
     else if (dx > 1) v.x = 1;
     if (dy < -1) v.y = -1;
     else if (dy > 1) v.y = 1;
-
-    v = Coquette.Collider.Maths.unitVector(v);
-    v = Coquette.Collider.Maths.scaleVector(v, this.speed.walk);
-    this.center.x += v.x;
-    this.center.y += v.y;
+    this.moveBy(v, this.speed.walk);
   }
 };
 
@@ -142,15 +138,8 @@ Robot.prototype.waits = {
       this.wanderTicks = Math.random() * 600;
     }
     var v = Coquette.Collider.Maths.vectorTo(this.center, this.wanderTarget);
-    v = Coquette.Collider.Maths.unitVector(v);
-    v = Coquette.Collider.Maths.scaleVector(v, 0.2);
-    this.center.x += v.x;
-    this.center.y += v.y;
-    this.center.x = Math.max(0, this.center.x);
-    this.center.x = Math.min(this.game.width, this.center.x);
-    this.center.y = Math.max(0, this.center.y);
-    this.center.y = Math.min(this.game.height, this.center.y);
-
+    this.moveBy(v, 0.2);
+    this.keepInBounds();
     this.wanderTicks--;
     if (this.wanderTicks <= 0) {
       this.wanderTarget = undefined;
