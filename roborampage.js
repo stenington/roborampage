@@ -41,7 +41,6 @@ Base.prototype.moveBy = function (direction, magnitude) {
 
 
 function Person(game, settings) {
-  this.size = { x:9, y:9 };
   this.init(game, settings);
   return this;
 }
@@ -49,13 +48,16 @@ function Person(game, settings) {
 Person.prototype = new Base();
 
 Person.prototype.update = function() {
-  if (false && this.c.inputter.isDown(this.c.inputter.SPACE)) {
-    if (!this.warped) {
-      this.center.x = Math.random() * this.game.width;
-      this.center.y = Math.random() * this.game.height;
-      this.warped = true;
+  Object.keys(this.specialKeys).forEach(function(key) {
+    if (this.c.inputter.isPressed(this.c.inputter[key])) {
+      this.specialKeys[key].call(this);
     }
-  }
+  }.bind(this));
+
+  this.move();
+}
+
+Person.prototype.move = function() {
   var v = {x:0, y:0};
   if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)) v.y += -1;
   if (this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)) v.y += 1;
@@ -74,8 +76,14 @@ Person.prototype.collision = function(other, type) {
   this.dead = true;
 };
 
+Person.prototype.specialKeys = {
+  'SPACE': function warp() {
+    this.center.x = Math.random() * this.game.width;
+    this.center.y = Math.random() * this.game.height;
+  }
+};
+
 function Robot(game, settings) {
-  this.size = { x:9, y:9 };
   this.init(game, settings);
   this.color = this.colors['alive'];
   if (this.attackStrategy === 'random') {
@@ -163,6 +171,7 @@ function Game(settings) {
   // Our intrepid player
   var player = this.c.entities.create(Person, { 
     center: { x:this.width/2, y:this.height/2 }, 
+    size: this.sizes.player,
     speed: this.speeds.player,
     color: this.colors.player.alive
   });
@@ -180,6 +189,7 @@ function Game(settings) {
   starts.forEach(function (start) {
     this.c.entities.create(Robot, {
       center: start,
+      size: this.sizes.robot,
       speed: this.speeds.robot,
       attackStrategy: attack,
       waitStrategy: wait,
