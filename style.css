@@ -5,12 +5,14 @@ body {
   background: url('http://stenington.org/roborampage/bkg.gif') 0 / 150px repeat; 
   /* bkg courtesy of http://home.earthlink.net/~hube02/backgrounds1.html */
   padding: 1em 0 2em 0;
+  line-height: 1.4em;
 }
 
 h1 {
   font-family: "Press Start 2P";
 }
 h1:hover,
+h2:hover,
 a:hover {
   animation-name: flash;
   animation-duration: 0.2s;
@@ -20,6 +22,10 @@ a:hover {
   -webkit-animation-duration: 0.2s;
   -webkit-animation-direction: alternate;
   -webkit-animation-iteration-count: infinite;
+}
+
+h2 {
+  margin-top: 1.5em;
 }
 
 @-webkit-keyframes flash {
@@ -88,11 +94,36 @@ dd {
 }
 
 a {
-  text-decoration: none;
   color: #222;
 }
 
-small {
+.attribution {
   display: block;
   margin-top: 3em;
+}
+
+section {
+  max-width: 500px;
+  margin: auto;
+}
+.hack p,
+.hack ul {
+  text-align: left;
+}
+ul {
+  padding-left: 0;
+  line-height: 1.8em;
+}
+.hack li a {
+  display: inline-block;
+  width: 360px;
+}
+.hack small {
+  display: inline-block;
+  width: 100px;
+  overflow: visible;
+  white-space: nowrap;
+}
+.hack small:before {
+  content: "➜ ";
 }
