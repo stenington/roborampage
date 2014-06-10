@@ -8,32 +8,59 @@
     $('body').tutorial();
   });
 </script>
+<style>
+  ol {
+    padding-left: 1.5em;
+  }
+  img {
+    width: 100%;
+  }
+  code {
+    color: #C41A16;
+  }
+</style>
 
 <section>
   <h1>Welcome to the tutorial!</h1>
   <p>
     This tutorial will show you how to change the game colors using its configuration variables. 
-    You'll learn a few different ways to express colors on the web, and be able to customize
+    You'll learn a few of the ridiculous ways to express colors on the web, and be able to customize
     the game to your liking.
   </p>
+  <p>
+    IT'S GONNA BE SUPER PRETTY UR GONNA LOVE IT!
+  </p>
+  <img src="jake.gif" alt="Rainbow bears dancing and Jake from Adventure Time slathering himself in some sort of... rainbow... jelly? Weird.">
 </section>
 <section>
   <h1>Changeable colors</h1>
   <p>
-    There are five colors you can control in the game:
+    There are five colors you can easily control in the game:
   </p>
   <ol>
-    <li>the background color (line 52)</li>
-    <li>the player color while alive (line 59)</li>
-    <li>the player color when dead (line 60)</li>
-    <li>the robot color when alive (line 69)</li>
-    <li>the robot color when dead (line 70)</li>
+    <li>line 52: the background color</li>
+    <li>line 59: the player color while alive</li>
+    <li>line 60: the player color when dead</li>
+    <li>line 69: the robot color when alive</li>
+    <li>line 70: the robot color when dead</li>
   </ol>
   <p>
     The values you see within quotes at those locations are colors, even though they may not look like it.
     Let's try something simple to start...
   </p>
+</section>
+<section>
+  <h1>Named colors</h1>
   <p class="do-it">
     On line 52, change <code>"#002b36"</code> to be <code>"midnightblue"</code>.
+  </p>
+  <p>
+    Did the background change? The background should have changed. Did it? Good.
+  </p>
+  <p>
+    That worked because <code>midnightblue</code> is a CSS color keyword. Check out 
+    <a href="http://www.w3.org/TR/css3-color/#colorunits">this page</a> to learn more
+    about the basic and extended color keywords. <code>peachpuff</code> robots on a field
+    of <code>salmon</code>? Go for it!
   </p>
 </section>
