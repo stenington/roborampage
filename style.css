@@ -1,0 +1,87 @@
+body {
+  text-align: center;
+  font-family: "Press Start 2P";
+  color: #222;
+  background: url('http://stenington.org/roborampage/bkg.gif') 0 / 150px repeat; 
+  /* bkg courtesy of http://home.earthlink.net/~hube02/backgrounds1.html */
+  padding: 1em 0 2em 0;
+}
+
+h1 {
+  font-family: "Press Start 2P";
+}
+h1:hover {
+  animation-name: flash;
+  animation-duration: 0.2s;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+  -webkit-animation-name: flash;
+  -webkit-animation-duration: 0.2s;
+  -webkit-animation-direction: alternate;
+  -webkit-animation-iteration-count: infinite;
+}
+
+@-webkit-keyframes flash {
+  from {
+    color: #fbc32d;
+  }
+  to {
+    color: #f6e636;
+  }
+}
+@keyframes flash {
+  from {
+    color: #fbc32d;
+  }
+  to {
+    color: #f6e636;
+  }
+}
+
+p {
+  max-width: 500px;
+  margin: 1em auto;
+}
+
+dl {
+  width: 400px;
+  margin: 1em auto;
+}
+dt {
+  float: left;
+  background-color: lightgray;
+  border-radius: 2px;
+  padding: 0.1em 0.2em;
+  margin: 0.2em 0.2em;
+  box-shadow: #222 1px 1px 1px;
+}
+dd {
+  display: block;
+  text-align: left;
+  margin-left: 200px;
+  height: 2.2em;
+  line-height: 2.2em;
+}
+
+.container {
+  position: relative;
+}
+
+#message {
+  display: none;
+  position: absolute;
+  width: 500px;
+  height: 1em;
+  top: 50%;
+  left: 50%;
+  margin-left: -250px;
+  margin-top: -0.5em;
+  animation-name: flash;
+  animation-duration: 0.2s;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+  -webkit-animation-name: flash;
+  -webkit-animation-duration: 0.2s;
+  -webkit-animation-direction: alternate;
+  -webkit-animation-iteration-count: infinite;
+}

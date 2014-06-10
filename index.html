@@ -1,101 +1,13 @@
 <!DOCTYPE html>
 <script src="http://stenington.org/roborampage/coquette.js"></script>
+<script src="roborampage.js"></script>
 <link href='https://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
-<style>
-  body {
-    text-align: center;
-    font-family: "Press Start 2P";
-    color: #222;
-    background: url('http://stenington.org/roborampage/bkg.gif') 0 / 150px repeat; 
-    /* bkg courtesy of http://home.earthlink.net/~hube02/backgrounds1.html */
-    padding: 1em 0 2em 0;
-  }
-
-  h1 {
-    font-family: "Press Start 2P";
-  }
-  h1:hover {
-    animation-name: flash;
-    animation-duration: 0.2s;
-    animation-direction: alternate;
-    animation-iteration-count: infinite;
-    -webkit-animation-name: flash;
-    -webkit-animation-duration: 0.2s;
-    -webkit-animation-direction: alternate;
-    -webkit-animation-iteration-count: infinite;
-  }
-  
-  @-webkit-keyframes flash {
-    from {
-      color: #fbc32d;
-    }
-    to {
-      color: #f6e636;
-    }
-  }
-  @keyframes flash {
-    from {
-      color: #fbc32d;
-    }
-    to {
-      color: #f6e636;
-    }
-  }
-
-  p {
-    max-width: 500px;
-    margin: 1em auto;
-  }
-
-  dl {
-    width: 400px;
-    margin: 1em auto;
-  }
-  dt {
-    float: left;
-    background-color: lightgray;
-    border-radius: 2px;
-    padding: 0.1em 0.2em;
-    margin: 0.2em 0.2em;
-    box-shadow: #222 1px 1px 1px;
-  }
-  dd {
-    display: block;
-    text-align: left;
-    margin-left: 200px;
-    height: 2.2em;
-    line-height: 2.2em;
-  }
-
-  .container {
-    position: relative;
-  }
-
-  .result {
-    display: none;
-    position: absolute;
-    width: 500px;
-    height: 1em;
-    top: 50%;
-    left: 50%;
-    margin-left: -250px;
-    margin-top: -0.5em;
-    animation-name: flash;
-    animation-duration: 0.2s;
-    animation-direction: alternate;
-    animation-iteration-count: infinite;
-    -webkit-animation-name: flash;
-    -webkit-animation-duration: 0.2s;
-    -webkit-animation-direction: alternate;
-    -webkit-animation-iteration-count: infinite;
-  }
-</style>
+<link href="style.css" rel="stylesheet" type="text/css">
 
 <h1>ROBORAMPAGE</h1>
 <div class="container">
   <canvas id="canvas" tabindex="1"></canvas>
-  <h1 id="win" class="result">You win!</h1>
-  <h1 id="lose" class="result">You lose.</h1>
+  <h1 id="message"></h1>
 </div>
 <p>The robots are after you! Get them to crash before they get you.</p>
 <dl>
@@ -111,242 +23,43 @@
 </dl>
 
 <script>
-// Add a method to Coquette's Maths module
-Coquette.Collider.Maths.scaleVector = function (vector, scale) {
-  return {
-    x: vector.x * scale,
-    y: vector.y * scale
-  };
-};
-
-// Define our entity classes and base classes  
-function Base() {}
-Base.prototype.init = function (game, settings) {
-  this.game = game;
-  this.c = game.c;
-  for (var i in settings) {
-    this[i] = settings[i];
-  }
+function showMessage(msg) {
+  var el = document.getElementById('message');
+  el.style.display = "initial";
+  el.textContent = msg;
 }
-Base.prototype.draw = function(ctx) {
-  ctx.fillStyle = this.color;
-  ctx.fillRect(this.center.x - this.size.x / 2,
-               this.center.y - this.size.y / 2,
-               this.size.x,
-               this.size.y);
-};
-
-function Person(game, settings) {
-  this.size = { x:9, y:9 };
-  this.init(game, settings);
-  return this;
-}
-Person.prototype = new Base();
-Person.prototype.update = function() {
-  if (this.c.inputter.isDown(this.c.inputter.SPACE)) {
-    if (!this.warped) {
-      this.center.x = Math.random() * this.game.width;
-      this.center.y = Math.random() * this.game.height;
-      this.warped = true;
-    }
-  }
-  else {
-    this.warped = false;
-    var v = {x:0, y:0};
-    if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)) v.y += -1;
-    if (this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)) v.y += 1;
-    if (this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)) v.x += -1;
-    if (this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW)) v.x += 1;
-
-    if (!Coquette.Collider.Maths.magnitude(v)) return;
-    
-    var speed = this.speed.walk
-    if (this.c.inputter.isDown(this.c.inputter.SHIFT)) speed = this.speed.run;
-    v = Coquette.Collider.Maths.unitVector(v);
-    v = Coquette.Collider.Maths.scaleVector(v, speed);
-    this.center.x += v.x;
-    this.center.y += v.y;
-    
-    this.center.x = Math.max(0, this.center.x);
-    this.center.x = Math.min(this.game.width, this.center.x);
-    this.center.y = Math.max(0, this.center.y);
-    this.center.y = Math.min(this.game.height, this.center.y);
-  }
-};
-Person.prototype.collision = function(other, type) {
-  this.dead = true;
-};
-
-function Robot(game, settings) {
-  this.size = { x:9, y:9 };
-  this.init(game, settings);
-  this.color = this.colors['alive'];
-  if (this.attackStrategy === 'random') {
-    var names = Object.keys(this.attacks);
-    this.attackStrategy = names[Math.floor(Math.random() * names.length)];
-    console.log(this.attackStrategy, names.length);
-  }
-  if (this.waitStrategy === 'random') {
-    var names = Object.keys(this.waits);
-    this.waitStrategy = names[Math.floor(Math.random() * names.length)];
-    console.log(this.waitStrategy, names.length);
-  }
-  this.move = this.attacks[this.attackStrategy];
-  this.wait = this.waits[this.waitStrategy];
-  return this;
-};
-Robot.prototype = new Base();
-Robot.prototype.update = function() {
-  if (!this.wreck) {
-    if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)
-        || this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)
-        || this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)
-        || this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW)) this.move();
-    else this.wait();
-  }
-};
-Robot.prototype.collision = function(other, type) {
-  if (other instanceof Robot) {
-    this.wreck = true;
-    this.color = this.colors['dead'];
-  }
-};
-Robot.prototype.attacks = {
-  direct: function directAttack() {
-    var v = Coquette.Collider.Maths.vectorTo(this.center, this.target.center);    
-
-    v = Coquette.Collider.Maths.unitVector(v);
-    v = Coquette.Collider.Maths.scaleVector(v, this.speed.walk);
-    this.center.x += v.x;
-    this.center.y += v.y;
-  },
-  compass: function compassAttack() {
-    var v = {x:0, y:0};
-    var dx = this.target.center.x - this.center.x;
-    var dy = this.target.center.y - this.center.y;
-    if (dx < -1) v.x = -1;
-    else if (dx > 1) v.x = 1;
-    if (dy < -1) v.y = -1;
-    else if (dy > 1) v.y = 1;
-
-    v = Coquette.Collider.Maths.unitVector(v);
-    v = Coquette.Collider.Maths.scaleVector(v, this.speed.walk);
-    this.center.x += v.x;
-    this.center.y += v.y;
-  }
-};
-Robot.prototype.waits = {
-  roam: function () {
-    if (!this.wanderTarget) {
-      var wanderDistance = 100;
-      this.wanderTarget = {
-        x: this.center.x + ((Math.random() * wanderDistance) - wanderDistance/2),
-        y: this.center.y + ((Math.random() * wanderDistance) - wanderDistance/2)
-      };
-      this.wanderTicks = Math.random() * 600;
-    }
-    var v = Coquette.Collider.Maths.vectorTo(this.center, this.wanderTarget);
-    v = Coquette.Collider.Maths.unitVector(v);
-    v = Coquette.Collider.Maths.scaleVector(v, 0.2);
-    this.center.x += v.x;
-    this.center.y += v.y;
-    this.wanderTicks--;
-    if (this.wanderTicks <= 0) {
-      this.wanderTarget = undefined;
-    }
-  },
-  wait: function() {}
-};
-
-// Define the Game
-var Game = function(opts) {
-  opts = opts || {};
-
-  // Game colors
-  var BKG_C = "#002b36";
-  var PLAYER_C = "#2aa198";
-  var ROBOT_C = {
-    dead: "#dc322f",
-    alive: "#d33682"
-  };
-  
-  // Entity config
-  var PLAYER_S = { walk: 2.4, run: 3.6 };
-  var ROBOT_S = { walk: 2.6 };
-  this.robotCount = 10;
-
-  // Game play area
-  this.width = 500;
-  this.height = 500;  
-
-  this.win = opts.win || function () { console.log('You win!'); };
-  this.lose = opts.lose || function () { console.log('You lose.'); };
-
-  // Check for game over each tick
-  this.update = function (interval) {
-    var allDead = true;
-    this.c.entities.all(Person).forEach(function (person) {
-      if (!person.dead) allDead = false;
-    });
-    if (allDead) {
-      this.lose();
-      this.c.ticker.stop();
-    }
-
-    var allWrecked = true;
-    this.c.entities.all(Robot).forEach(function (robot) {
-      if (!robot.wreck) allWrecked = false;
-    });
-    if (allWrecked) {
-      this.win();
-      this.c.ticker.stop();
-    }
-  };
-
-  this.c = new Coquette(this, "canvas", this.width, this.height, BKG_C, true);
-
-  // Our intrepid player
-  var player = this.c.entities.create(Person, { 
-    center: { x:this.width/2, y:this.height/2 }, 
-    speed: PLAYER_S,
-    color: PLAYER_C
-  });
-
-  // The evil robots!
-  var starts = [];
-  var wait = ['wait', 'roam', 'random'][Math.floor(Math.random() * 3)];
-  var attack = ['compass', 'direct', 'random'][Math.floor(Math.random() * 3)];
-  for (var i=0; i<this.robotCount; i++) {
-    starts.push({
-      x: Math.random() * 500,
-      y: Math.random() * 500
-    });
-  }
-  starts.forEach(function (start) {
-    this.c.entities.create(Robot, {
-      center: start,
-      speed: ROBOT_S,
-      attackStrategy: attack,
-      waitStrategy: wait,
-      colors: ROBOT_C,
-      target: player
-    });
-  }.bind(this));
-};
 
 window.addEventListener('load', function() {
   new Game({
+    width: 500,
+    height: 500,
+    colors: {
+      background: "#002b36",
+      player: {
+        alive: "#2aa198",
+        dead:  "#2aa198"
+      },
+      robot: {
+        alive: "#d33682",
+        dead:  "#dc322f"
+      }
+    },
+    speeds: {
+      player: {
+        walk: 2.4,
+        run:  3.6
+      },
+      robot: {
+        walk: 2.6
+      }
+    },
+    robots: 10,
     win: function () {
-      document.getElementById('win').style.display = "initial";
+      showMessage("You win!");
     },
     lose: function () {
-      document.getElementById('lose').style.display = "initial";
+      showMessage("You lose.");
     }
   });
-  
-  // Steal focus in viewing mode, not editing mode
-  if (window.self.frameElement.hasAttribute('allowfullscreen')) {
-    document.getElementById('canvas').focus();
-  }
 });
 </script>
