@@ -10,7 +10,8 @@ body {
 h1 {
   font-family: "Press Start 2P";
 }
-h1:hover {
+h1:hover,
+a:hover {
   animation-name: flash;
   animation-duration: 0.2s;
   animation-direction: alternate;
@@ -84,4 +85,14 @@ dd {
   -webkit-animation-duration: 0.2s;
   -webkit-animation-direction: alternate;
   -webkit-animation-iteration-count: infinite;
+}
+
+a {
+  text-decoration: none;
+  color: #222;
+}
+
+small {
+  display: block;
+  margin-top: 3em;
 }
