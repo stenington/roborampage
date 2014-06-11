@@ -98,8 +98,10 @@ a {
 }
 
 .attribution {
-  display: block;
   margin-top: 3em;
+}
+.attribution small {
+  display: block;
 }
 
 section {
