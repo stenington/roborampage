@@ -59,7 +59,11 @@
 var showHitArea = false;
 
 Base.prototype.draw = function(ctx) {
-  var image = (this.dead || this.wreck) ? this.images['dead'] : this.images['alive'];
+  var image = this.images['alive'];
+  if (this.dead || this.wreck) {
+    image = this.images['dead'];
+  }
+  this.padding = this.padding || {x:0, y:0};
   var imageSize = {
     x: this.size.x + this.padding.x,
     y: this.size.y + this.padding.y
@@ -97,8 +101,7 @@ window.addEventListener('load', function() {
       images: {
         alive: document.getElementById('player-alive'),
         dead: document.getElementById('player-dead')
-      },
-      padding: { x: 12, y: 12 }
+      }
     },
     robot: {
       size: { x: 32, y: 30 },
@@ -108,8 +111,7 @@ window.addEventListener('load', function() {
       images: {
         alive: document.getElementById('robot-alive'),
         dead: document.getElementById('robot-dead')
-      },
-      padding: { x: 10, y: 10 }
+      }
     },
     win: function () {
       showMessage("You win!");

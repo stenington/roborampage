@@ -21,7 +21,61 @@
   <h1>Changing graphics</h1>
   <p>
     Here's a modified version of the game that draws graphics to the screen
-    instead of colored squares. Let's walk through the code, and then see
+    instead of colored squares. Let's look at how it works, and then see
     how to add in graphics of your own!
   </p>
+  <h2>How it works</h2>
+  <p>
+    The new function to draw our player and robots starts on line 61. There's
+    a lot of code there, but you don't have to understand it all right now. We'll
+    go through it piece by piece throughout this tutorial.
+  <p>
+  <p>
+    On line 101 and line 111 we are telling the game which images to use for the player
+    and for the robots respectively. We're fetching images loaded on the page in <code>&lt;img&gt;</code>
+    tags.
+  </p>
+  <p>
+    The images we want to use are in a new section of the page called "Assets", which
+    starts on line 43. There are four images with four distinct ids: <code>player-alive</code>,
+    <code>player-dead</code>, <code>robot-alive</code>, and <code>robot-dead</code>. These
+    are the graphics the game is using. Try changing the <code>src</code> value of some of them
+    to see what happens!
+  </p>
+  <h2>Collisions</h2>
+  <p>
+    You might have noticed that robots can collide or even get you without seeing any visual overlap
+    on the screen. This is because under the hood, we're detecting collisions using simple squares,
+    not pixel-perfect comparison of the images themselves.
+  </p>
+  <p>
+    You might have noticed in the Assets area on line 43 that the images there have pink backgrounds.
+    That's showing you the true size of the images you're using, which can differ from the visual size
+    if the image has a transparent background. We can show that pink square in the game as well.
+    On line 59 there's a variable named <code>showHitArea</code> set to <code>false</code>. Change that
+    value to <code>true</code> and see what happens. You should now see translucent pink squares over
+    top of the artwork. That's showing you the "hit area" of the player and robots. If the hit area
+    of two entities overlaps, a collision has happened.
+  </p>
+  <h2>Adjusting the hit area</h2>
+  <p>
+    It's pretty frustrating to die in the game when the robots don't even seem to be touching you,
+    so let's fix that. Look at line 66 of the code, inside the new draw function. There's a line
+    there setting <code>this.padding</code> to <code>{x:0, y:0}</code> if it hasn't already been
+    given a value. That padding will let us shrink the hit area of our graphics to be a smaller
+    rectangle inside the graphic itself.
+  </p>
+  <p>
+    To fix the player graphic, go to line 104 and add a new piece of configuration in a new line below it:
+    <code>padding: { x: 10, y: 10 }</code>. Don't forget to put a comma on line 104 like <code>},</code>.
+    With <code>showHitArea</code> still set to true, see what happens in the game now. The pink square should
+    be a bit smaller than the edges of the graphic you are using now! You can use this to shrink down the hit
+    area and allow a little bit of overlap before the game considers a collision to have occurred.
+  </p>
+  <p>
+    You can also adjust the <code>size</code> parameters of your player and robots on line 99 and line 107. With
+    the combination of <code>size</code> and <code>padding</code>, you should be able to make the collision detection
+    a little more forgiving, and the game a little more fun to play!
+  </p>
+
 </section>
