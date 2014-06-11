@@ -12,35 +12,15 @@
   ol {
     padding-left: 1.5em;
   }
-  img {
-    width: 100%;
-  }
   code {
     color: #C41A16;
-  }
-  .mauve {
-    background-color: #E0B0FF;
-    color: #673147;
-    padding: 1px 5px;
   }
 </style>
 
 <section>
-  <h1>Welcome to the tutorial!</h1>
+  <h1>Changing game colors</h1>
   <p>
-    This tutorial will show you how to change the game colors using its configuration variables. 
-    You'll learn a few of the ridiculous ways to express colors on the web, and be able to customize
-    the game to your liking.
-  </p>
-  <p>
-    IT'S GONNA BE SUPER PRETTY UR GONNA LOVE IT!
-  </p>
-  <img src="jake.gif" alt="Rainbow bears dancing and Jake from Adventure Time slathering himself in some sort of... rainbow... jelly? Weird.">
-</section>
-<section>
-  <h1>Changeable colors</h1>
-  <p>
-    There are five colors you can easily control in the game:
+    There are five colors you can change through configuration settings in the game:
   </p>
   <ol>
     <li>line 52: the background color</li>
@@ -50,73 +30,34 @@
     <li>line 70: the robot color when dead</li>
   </ol>
   <p>
-    The values you see within quotes at those locations are colors, even though they may not look like it.
-    Let's try something simple to start...
-  </p>
-</section>
-<section>
-  <h1>Named colors</h1>
-  <p class="do-it">
-    On line 52, change <code>"#002b36"</code> to be <code>"midnightblue"</code>.
-  </p>
-  <p>
-    Did the background change? The background should have changed. Did it? Good.
-  </p>
-  <p>
-    That worked because <code>midnightblue</code> is a CSS color keyword. Check out 
-    <a target="_blank" href="http://www.w3.org/TR/css3-color/#colorunits">this page</a> to learn more
-    about the basic and extended color keywords.
-  </p>
-  <p>
-    <code>peachpuff</code> robots on a field
-    of <code>salmon</code>? Go for it, weirdo.
-  </p>
-  <img src="puke.gif" alt="Puking rainbows, my friend.">
-</section>
-<section>
-  <h1>Other colors</h1>
-  <p>
-    There are other ways to talk about colors that the game can understand as well. 
-    Take another look at the <a target="_blank" href="http://www.w3.org/TR/css3-color/#colorunits">CSS Color Module Level 3</a>
-    page I sent you to a moment ago. Anything look familiar? The section on <strong>RGB color values</strong>
-    will explain what the original <code>"#002b36"</code> business was all about.
-  </p>
-  <p>
-    Experiment for a while with expressing colors in different ways. Color keywords can only do so much
-    for you, but with RGB or HSL you can get a little more specific about the <span class="mauve">shade of mauve</span> that would
-    be just perfect for your palette!
-  </p>
-</section>
-<section>
-  <h1>Going deeper</h1>
-  <p>
-    So by now your game should be looking pretty great, but maybe you're wondering why you have to express colors
-    in these weird and varied ways? Let's go a little bit deeper.
-  </p>
-  <p>
-    Under the hood, the game is using an element called a <code>canvas</code> to draw everything to the screen, and
-    the colors you are setting are being set as the <code>fillStyle</code> to use on that canvas. 
+    You can set those variables to anything accepted as a valid canvas <code>fillStyle</code>&emdash;that's what the game
+    is doing under the hood.
     <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Applying_styles_and_colors">This
-    MDN article</a> talks all about <code>fillStyle</code>, and as you can see, one of the things it can accept
-    is a string representing a CSS color. And where do you go to learn about representing CSS colors?
-    THE <a target="_blank" href="http://www.w3.org/TR/css3-color/#colorunits">CSS COLOR MODULE LEVEL 3</a>!!!
+    MDN article</a> talks about <code>fillStyle</code> and the different ways to set it.
   </p>
   <p>
-    Notice that <code>fillStyle</code> can take gradients or patterns as well. Working with those is a bit beyond the scope
-    of this tutorial, but if you want to you can follow the examples in the article to
-    create a gradient or a pattern and assign it where you would have assigned a color. The game canvas has the same
+    The simplest option is a string specifying a CSS color.
+    The W3C <a target="_blank" href="http://www.w3.org/TR/css3-color/#colorunits">CSS Color Module Level 3</a> page provides a full
+    explanation of what that means, including color keywords, numerical values, RGB, RGBA, and more. 
+    Try changing the background value (line 52) to <code>"midnightblue"</code>. The background should now be a nice deep shade of blue.
+    You can also use <code>"#191970"</code>, <code>"rgb(25,25,112)"</code>, or <code>"rgba(25,25,112,1)"</code> to get that same color.
+    Use that as a starting point to explore some different possibilities.
+  </p>
+  <p>
+    If you want a specific color and get tired of guessing at the right RGB value, there are lots of tools and websites
+    like <a href="http://www.colorpicker.com/">www.colorpicker.com</a> that can help you, or the more advanced 
+    <a href="https://kuler.adobe.com">Adobe Kuler</a> that helps you build palettes as well.
+  </p>
+  <p>
+    Notice that <code>fillStyle</code> can also take gradients or patterns. Working with those is a bit beyond the scope
+    of this tutorial, but if you want to you can follow the examples in 
+    <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Applying_styles_and_colors">the article
+    mentioned above</a> to create a gradient or a pattern and assign it where you would have assigned a color. The game canvas has the same
     id as in the examples, so <code>var ctx = document.getElementById('canvas').getContext('2d');</code> will give you
     the canvas drawing context you need to get started. Feel free to play around, the results may 
     surprise you a little bit. 
   </p>
-</section>
-<section>
-  <h1>The end?</h1>
   <p>
-    So there you go. You've styled your game, and I'm SURE IT LOOKS BEAUTIFUL!
-  </p>
-  <img src="likeit.gif" alt="I like it a lot.">
-  <p>
-    Remember that you can save your remix, and please try out the other tutorials!
+    Remember to save your remix, if you like what you create!
   </p>
 </section>
