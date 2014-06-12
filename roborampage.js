@@ -160,7 +160,7 @@ function extend() {
   var args = Array.prototype.slice.apply(arguments);
   return args.reduce(function(prev, curr, idx, arr) {
     if (!curr) return prev;
-    for(key in curr) {
+    for(var key in curr) {
       prev[key] = curr[key];
     }
     return prev;
