@@ -5,7 +5,9 @@
   <link rel="stylesheet" href="vendor/mocha.css" />
 </head>
 <body>
-  <div id="mocha"></div>
+  <div id="mocha">
+    <canvas id="canvas"></canvas>
+  </div>
   <script src="vendor/jquery.js"></script>
   <script src="vendor/should.js"></script>
   <script src="vendor/mocha.js"></script>
@@ -16,8 +18,34 @@
   <script>
     mocha.checkLeaks();
     mocha.globals(['jQuery']);
-    mocha.run();
+    var testRun = mocha.run();
+    testRun.on('end', function(){
+      new Game({
+        width: 500,
+        height: 500,
+        background: "#002b36",
+        enemies: 10,
+        player: {
+          center: { x: 250, y: 250 },
+          size: { x: 9, y: 9 },
+          speed: { walk: 2.4, run: 3.6 },
+          colors: { alive: "#2aa198", dead: "#2aa198" }
+        },
+        robot: {
+          size: { x: 9, y: 9 },
+          speed: { walk: 2.6 },
+          attackStrategy: 'compass',
+          waitStrategy: 'roam',
+          colors: { alive: "#d33682", dead:  "#dc322f" },
+        },
+        win: function () {
+          console.log("You win!");
+        },
+        lose: function () {
+          console.log("You lose.");
+        }
+      });
+    });
   </script>
-  <canvas id="canvas"></canvas>
 </body>
 </html>

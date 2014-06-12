@@ -50,7 +50,12 @@ describe('Game', function() {
 });
 
 describe('Game Controls', function () {
+  beforeEach(function() {
+    this.originalControls = Person.prototype.controls;
+  });
+
   afterEach(function(done) {
+    Person.prototype.controls = this.originalControls;
     this.g.c.ticker.stop(); // stop the current game instance
     requestAnimationFrame(function() {
       done(); // let queued functions clear before continuing tests
