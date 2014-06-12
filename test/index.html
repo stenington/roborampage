@@ -1,0 +1,80 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ROBORAMPAGE Tests</title>
+  <link rel="stylesheet" href="vendor/mocha.css" />
+</head>
+<body>
+  <div id="mocha"></div>
+  <script src="vendor/jquery.js"></script>
+  <script src="vendor/should.js"></script>
+  <script src="vendor/mocha.js"></script>
+  <script src="../coquette.js"></script>
+  <script src="../roborampage.js"></script>
+  <script>mocha.setup('bdd')</script>
+  <script>
+    describe('Extra Maths', function() {
+      it('should have scaleVector', function () {
+        Coquette.Collider.Maths.scaleVector.should.be.a.Function;
+      });
+    });
+    
+    describe('specialKey functions', function () {
+      it('should', function (done) {
+        done();
+        Person.prototype.controls = {
+          'A': function() { this.direction.y += -1; },
+          'B': {
+            up: function() { this.speed = this.speeds.walk; },
+            down: function() { this.speed = this.speeds.run; }
+          },
+          'C': {
+            pressed: function() { 
+              this.center.x = Math.random() * this.game.width;
+              this.center.y = Math.random() * this.game.height;
+            }
+          }
+        };
+      });
+
+      it('should call handler on keydown', function (done) {
+        Person.prototype.specialKeys['X'] = function () {
+          done();
+        };
+        
+        var g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+        g.c.inputter._buttonListener._down(g.c.inputter.X);
+      });
+
+      it('should call handler once per press', function (done) {
+        var fired = 0;
+        Person.prototype.specialKeys['X'] = function () {
+          fired++;
+        };
+
+        var ticks = 0;
+        var update = Person.prototype.update;
+        Person.prototype.update = function () {
+          ticks++;
+          update.apply(this);
+        };
+
+        var g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+        g.c.inputter._buttonListener._down(g.c.inputter.X);
+        setTimeout(function () {
+          g.c.inputter._buttonListener._up(g.c.inputter.X);
+          fired.should.equal(1);
+          ticks.should.be.greaterThan(1);
+          done();
+        }, 100);
+      });
+    });
+  </script>
+  <script>
+    mocha.checkLeaks();
+    mocha.globals(['jQuery']);
+    mocha.run();
+  </script>
+  <canvas id="canvas"></canvas>
+</body>
+</html>
