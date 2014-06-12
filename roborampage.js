@@ -49,27 +49,39 @@ function Person(game, settings) {
 Person.prototype = new Base();
 
 Person.prototype.update = function() {
-  Object.keys(this.specialKeys).forEach(function(key) {
-    if (this.c.inputter.isPressed(this.c.inputter[key])) {
-      this.specialKeys[key].call(this);
+  this.currentSpeed = this.speed.walk;
+  this.direction = {x:0, y:0};
+
+  Object.keys(this.controls).forEach(function(key) {
+    var spec = this.controls[key];
+    if (typeof spec === 'function') {
+      if (this.c.inputter.isDown(this.c.inputter[key])) {
+        spec.call(this);
+      }
+    }
+    else if (spec.down || spec.up) {
+      if (spec.down && this.c.inputter.isDown(this.c.inputter[key])) {
+        spec.down.call(this);
+      }
+      if (spec.up && !this.c.inputter.isDown(this.c.inputter[key])) {
+        spec.up.call(this);
+      }
+    }
+    else if (spec.pressed) {
+      if (this.c.inputter.isPressed(this.c.inputter[key])) {
+        spec.pressed.call(this);
+      }
     }
   }.bind(this));
+
+  if (this.onUpdate) this.onUpdate();
 
   this.move();
 }
 
 Person.prototype.move = function() {
-  var v = {x:0, y:0};
-  if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)) v.y += -1;
-  if (this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)) v.y += 1;
-  if (this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)) v.x += -1;
-  if (this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW)) v.x += 1;
-
-  if (!Coquette.Collider.Maths.magnitude(v)) return;
-  
-  var speed = this.speed.walk
-  if (this.c.inputter.isDown(this.c.inputter.SHIFT)) speed = this.speed.run;
-  this.moveBy(v, speed);
+  if (!Coquette.Collider.Maths.magnitude(this.direction)) return;
+  this.moveBy(this.direction, this.currentSpeed);
   this.keepInBounds(); 
 };
 
@@ -77,10 +89,19 @@ Person.prototype.collision = function(other, type) {
   this.dead = true;
 };
 
-Person.prototype.specialKeys = {
-  'SPACE': function warp() {
-    this.center.x = Math.random() * this.game.width;
-    this.center.y = Math.random() * this.game.height;
+Person.prototype.controls = {
+  'UP_ARROW': function () { this.direction.y += -1; },
+  'DOWN_ARROW': function () { this.direction.y += 1; },
+  'LEFT_ARROW': function () { this.direction.x += -1; },
+  'RIGHT_ARROW': function () { this.direction.x += 1; },
+  'SHIFT': function () {
+    this.currentSpeed = this.speed.run;
+  },
+  'SPACE': {
+    pressed: function warp() {
+      this.center.x = Math.random() * this.game.width;
+      this.center.y = Math.random() * this.game.height;
+    }
   }
 };
 

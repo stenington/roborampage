@@ -18,52 +18,94 @@
         Coquette.Collider.Maths.scaleVector.should.be.a.Function;
       });
     });
-    
-    describe('specialKey functions', function () {
-      it('should', function (done) {
-        done();
+
+    describe('Game Controls', function () {
+      afterEach(function(done) {
+        this.g.c.ticker.stop(); // stop the current game instance
+        requestAnimationFrame(function() {
+          done(); // let queued functions clear before continuing tests
+        });
+      });
+
+      it('should run key function continuously when down', function (done) {
+        var times = 0;
         Person.prototype.controls = {
-          'A': function() { this.direction.y += -1; },
-          'B': {
-            up: function() { this.speed = this.speeds.walk; },
-            down: function() { this.speed = this.speeds.run; }
-          },
-          'C': {
-            pressed: function() { 
-              this.center.x = Math.random() * this.game.width;
-              this.center.y = Math.random() * this.game.height;
-            }
+          'A': function() { times++; }
+        };
+        var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+        g.c.inputter._buttonListener._down(g.c.inputter.A);
+        setTimeout(function() {
+          g.c.ticker.stop();
+          times.should.be.greaterThan(1);
+          done();
+        }, 100);
+      });
+
+      it('should not run key function when up', function (done) {
+        var times = 0;
+        Person.prototype.controls = {
+          'A': function() { times++; }
+        };
+        var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+        setTimeout(function() {
+          times.should.equal(0);
+          done();
+        }, 100);
+      });
+
+      it('should run down function continuously when down', function (done) {
+        var up = 0;
+        var down = 0;
+        Person.prototype.controls = {
+          'A': {
+            down: function() { down++; },
+            up: function() { up++; }
           }
         };
-      });
-
-      it('should call handler on keydown', function (done) {
-        Person.prototype.specialKeys['X'] = function () {
+        var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+        g.c.inputter._buttonListener._down(g.c.inputter.A);
+        setTimeout(function() {
+          g.c.ticker.stop();
+          down.should.be.greaterThan(1);
+          up.should.equal(0);
           done();
-        };
-        
-        var g = new Game({width: 100, height: 100, background: "black", enemies: 1});
-        g.c.inputter._buttonListener._down(g.c.inputter.X);
+        }, 100);
       });
 
-      it('should call handler once per press', function (done) {
-        var fired = 0;
-        Person.prototype.specialKeys['X'] = function () {
-          fired++;
+      it('should run up function continuously when up', function (done) {
+        var up = 0;
+        var down = 0;
+        Person.prototype.controls = {
+          'A': {
+            down: function() { down++; },
+            up: function() { up++; }
+          }
         };
+        var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+        setTimeout(function() {
+          up.should.be.greaterThan(1);
+          down.should.equal(0);
+          done();
+        }, 100);
+      });
 
+      it('should run pressed function once when down', function (done) {
+        var times = 0;
+        Person.prototype.controls = {
+          'A': {
+            pressed: function() { times++; }
+          }
+        };
         var ticks = 0;
         var update = Person.prototype.update;
         Person.prototype.update = function () {
           ticks++;
           update.apply(this);
         };
-
-        var g = new Game({width: 100, height: 100, background: "black", enemies: 1});
-        g.c.inputter._buttonListener._down(g.c.inputter.X);
-        setTimeout(function () {
-          g.c.inputter._buttonListener._up(g.c.inputter.X);
-          fired.should.equal(1);
+        var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+        g.c.inputter._buttonListener._down(g.c.inputter.A);
+        setTimeout(function() {
+          times.should.equal(1);
           ticks.should.be.greaterThan(1);
           done();
         }, 100);
