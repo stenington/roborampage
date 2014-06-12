@@ -87,6 +87,7 @@ Person.prototype.move = function() {
 
 Person.prototype.collision = function(other, type) {
   this.dead = true;
+  this.color = this.colors['dead'];
 };
 
 Person.prototype.controls = {
@@ -197,7 +198,7 @@ function Game(settings) {
 
   this.win = this.win || function () {};
   this.lose = this.lose || function () {};
-  this.enemies = this.enemies || 10;
+  this.enemies = this.hasOwnProperty('enemies') ? this.enemies : 10;
 
   this.c = new Coquette(this, "canvas", this.width, this.height, this.background, true);
 
