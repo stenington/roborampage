@@ -8,6 +8,7 @@ Coquette.Collider.Maths.scaleVector = function (vector, scale) {
 
 // Define the Game, which contains EVERYTHING!
 function Game() {
+  this.socket = io();
 
   // Define our entity classes and base classes  
   this.Base = function Base() {}
@@ -18,7 +19,9 @@ function Game() {
     for (var i in settings) {
       this[i] = settings[i];
     }
-    this.color = this.colors['alive'];
+    if (this.colors) {
+      this.color = this.colors['alive'];
+    }
   };
 
   this.Base.prototype.draw = function(ctx) {
@@ -44,6 +47,37 @@ function Game() {
   };
 
 
+  this.Remote = function Remote(game, settings) {
+    if (game) {
+      this.init(game, settings);
+    }
+    return this;
+  }
+
+  this.Remote.prototype = new this.Base();
+
+  this.Remote.prototype.set = function(attrs) {
+    for (var i in attrs) {
+      this[i] = attrs[i];
+    }
+  };
+
+  this.RemotePlayer = function RemotePlayer(game, settings) {
+    this.init(game, settings);
+    return this;
+  }
+
+  this.RemotePlayer.prototype = new this.Remote();
+
+  this.RemotePlayer.prototype.collision = function() {
+    if (this.game.leader && !this.dead) {
+      this.dead = true;
+      this.color = this.colors['dead'];
+      this.game.socket.emit('dead', this.id);
+    }
+  };
+
+
   this.Person = function Person(game, settings) {
     this.init(game, settings);
     return this;
@@ -55,31 +89,43 @@ function Game() {
     this.currentSpeed = this.speed.walk;
     this.direction = {x:0, y:0};
 
-    Object.keys(this.controls).forEach(function(key) {
-      var spec = this.controls[key];
-      if (typeof spec === 'function') {
-        if (this.c.inputter.isDown(this.c.inputter[key])) {
-          spec.call(this);
+    if (!this.dead) {
+      Object.keys(this.controls).forEach(function(key) {
+        var spec = this.controls[key];
+        if (typeof spec === 'function') {
+          if (this.c.inputter.isDown(this.c.inputter[key])) {
+            spec.call(this);
+          }
         }
-      }
-      else if (spec.down || spec.up) {
-        if (spec.down && this.c.inputter.isDown(this.c.inputter[key])) {
-          spec.down.call(this);
+        else if (spec.down || spec.up) {
+          if (spec.down && this.c.inputter.isDown(this.c.inputter[key])) {
+            spec.down.call(this);
+          }
+          if (spec.up && !this.c.inputter.isDown(this.c.inputter[key])) {
+            spec.up.call(this);
+          }
         }
-        if (spec.up && !this.c.inputter.isDown(this.c.inputter[key])) {
-          spec.up.call(this);
+        else if (spec.pressed) {
+          if (this.c.inputter.isPressed(this.c.inputter[key])) {
+            spec.pressed.call(this);
+          }
         }
-      }
-      else if (spec.pressed) {
-        if (this.c.inputter.isPressed(this.c.inputter[key])) {
-          spec.pressed.call(this);
-        }
-      }
-    }.bind(this));
+      }.bind(this));
 
-    if (this.onUpdate) this.onUpdate();
+      if (this.onUpdate) this.onUpdate();
 
-    this.move();
+      this.move();
+    }
+
+    this.moving = Coquette.Collider.Maths.magnitude(this.direction) !== 0;
+
+    this.game.socket.emit('update player', {
+      center: this.center,
+      color: this.color,
+      colors: this.colors,
+      size: this.size,
+      moving: this.moving
+    });
   }
 
   this.Person.prototype.move = function() {
@@ -128,12 +174,26 @@ function Game() {
 
   this.Robot.prototype.update = function() {
     if (!this.wreck) {
-      if (this.c.inputter.isDown(this.c.inputter.UP_ARROW)
-          || this.c.inputter.isDown(this.c.inputter.DOWN_ARROW)
-          || this.c.inputter.isDown(this.c.inputter.LEFT_ARROW)
-          || this.c.inputter.isDown(this.c.inputter.RIGHT_ARROW)) this.move();
+      this.target = undefined;
+      var players = [].concat(this.game.c.entities.all(this.game.Person), this.game.c.entities.all(this.game.RemotePlayer));
+      for (var idx = 0; idx < players.length; idx++) {
+        var player = players[idx];
+        if (!player.dead && player.moving) {
+          this.target = player;
+          break;
+        }
+      }
+
+      if (this.target) this.move();
       else this.wait();
     }
+
+    this.game.socket.emit('update robot', {
+      id: this.id,
+      center: this.center,
+      color: this.color,
+      size: this.size
+    });
   };
 
   this.Robot.prototype.collision = function(other, type) {
@@ -204,53 +264,98 @@ Game.prototype.start = function(settings) {
   this.lose = this.lose || function () {};
   this.enemies = this.hasOwnProperty('enemies') ? this.enemies : 10;
 
-  this.c = new Coquette(this, "canvas", this.width, this.height, this.background, true);
+  this.socket.emit('handshake', function (rank, id) {
+    this.c = new Coquette(this, "canvas", this.width, this.height, this.background, true);
 
-  // Our intrepid player
-  var playerDefaults = { 
-    center: { x:this.width/2, y:this.height/2 }, 
-    size: { x:9, y:9 },
-    speed: { walk:2.4, run:3.6 },
-    colors: { alive:"#2aa198", dead:"#2aa198" }
-  };
-  var player = this.c.entities.create(this.Person, extend(playerDefaults, settings.player));
-
-  // The evil robots!
-  var robotDefaults = {
-    size: { x:9, y:9 },
-    speed: { walk: 2.6 },
-    attackStrategy: 'compass',
-    waitStrategy: 'roam',
-    colors: { alive: "#d33682", dead:  "#dc322f" },
-    target: player
-  };
-  for (var i=0; i<this.enemies; i++) {
-    this.c.entities.create(this.Robot, extend({
-      center: {
-        x: Math.random() * 500,
-        y: Math.random() * 500
+    // Our intrepid player
+    var playerDefaults = { 
+      id: id,
+      center: { x:Math.random()*this.width, y:Math.random()*this.height },
+      size: { x:9, y:9 },
+      speed: { walk:2.4, run:3.6 },
+      colors: { alive:"#2aa198", dead:"#2aa198" }
+    };
+    var player = this.c.entities.create(this.Person, extend(playerDefaults, settings.player));
+    this.socket.on('dead', function(id) {
+      if (id === player.id) {
+        player.dead = true;
       }
-    }, robotDefaults, settings.robot));
-  }
+    }.bind(this));
+
+    if (rank === 'leader') {
+      this.leader = true;
+      console.log('I am the leader');
+      // The evil robots!
+      var robotDefaults = {
+        size: { x:9, y:9 },
+        speed: { walk: 2.6 },
+        attackStrategy: 'compass',
+        waitStrategy: 'roam',
+        colors: { alive: "#d33682", dead:  "#dc322f" },
+        target: player
+      };
+      for (var i=0; i<this.enemies; i++) {
+        this.c.entities.create(this.Robot, extend({
+          id: i,
+          center: {
+            x: Math.random() * 500,
+            y: Math.random() * 500
+          }
+        }, robotDefaults, settings.robot));
+      }
+    }
+    else {
+      var robots = {};
+      this.socket.on('update robot', function(robot){
+        if (!robots[robot.id]) {
+          robots[robot.id] = this.c.entities.create(this.Remote, robot);
+        }
+        robots[robot.id].set(robot);
+      }.bind(this));
+    }
+
+    var otherPlayers = {};
+    this.socket.on('update player', function(other){
+      if (!otherPlayers[other.id]) {
+        otherPlayers[other.id] = this.c.entities.create(this.RemotePlayer, other);
+      }
+      otherPlayers[other.id].set(other);
+    }.bind(this));
+
+    this.socket.on('remove player', function(id){
+      this.c.entities.destroy(otherPlayers[id]);
+      delete otherPlayers[id];
+    }.bind(this));
+  }.bind(this));
+
+  this.socket.on('win', this.win);
+  this.socket.on('lose', this.lose);
 };
 
 // This checks for win/lose
 Game.prototype.update = function(interval) {
-  var allDead = true;
-  this.c.entities.all(this.Person).forEach(function (person) {
-    if (!person.dead) allDead = false;
-  });
-  if (allDead) {
-    this.lose();
-    this.c.ticker.stop();
-  }
+  if (this.leader) {
+    var allDead = true;
+    this.c.entities.all(this.Person).forEach(function (person) {
+      if (!person.dead) allDead = false;
+    });
+    this.c.entities.all(this.RemotePlayer).forEach(function (player) {
+      if (!player.dead) allDead = false;
+    });
+    if (allDead) {
+      this.lose();
+      this.c.ticker.stop();
+      this.socket.emit('lose');
+    }
 
-  var allWrecked = true;
-  this.c.entities.all(this.Robot).forEach(function (robot) {
-    if (!robot.wreck) allWrecked = false;
-  });
-  if (allWrecked) {
-    this.win();
-    this.c.ticker.stop();
+    var allWrecked = true;
+    this.c.entities.all(this.Robot).forEach(function (robot) {
+      if (!robot.wreck) allWrecked = false;
+    });
+    if (allWrecked) {
+      this.win();
+      this.c.ticker.stop();
+      this.socket.emit('win');
+    }
   }
 };
