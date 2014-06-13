@@ -20,7 +20,7 @@
     mocha.globals(['jQuery']);
     var testRun = mocha.run();
     testRun.on('end', function(){
-      new Game({
+      new Game().start({
         width: 500,
         height: 500,
         background: "#002b36",

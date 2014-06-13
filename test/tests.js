@@ -5,69 +5,62 @@ describe('Extra Maths', function() {
 });
 
 describe('Game', function() {
-  afterEach(function(done) {
+  afterEach(function() {
     this.g.c.ticker.stop(); // stop the current game instance
-    requestAnimationFrame(function() {
-      done(); // let queued functions clear before continuing tests
-    });
   });
 
   it('should call win on win', function (done) {
-    var g = this.g = new Game({
+    var g = this.g = new Game();
+    g.start({
       width: 100, 
       height: 100, 
       background: "black", 
       enemies: 2,
       win: done
     });
-    var robots = g.c.entities.all(Robot);
+    var robots = g.c.entities.all(g.Robot);
     robots[0].collision(robots[1]);
     robots[1].collision(robots[0]);
   });
 
   it('should call lose on lose', function (done) {
-    var g = this.g = new Game({
+    var g = this.g = new Game();
+    g.start({
       width: 100, 
       height: 100, 
       background: "black", 
       enemies: 2,
       lose: done
     });
-    g.c.entities.all(Person).forEach(function(entity) {  
+    g.c.entities.all(g.Person).forEach(function(entity) {  
       entity.dead = true;
     });
   });
 
   it('should allow 0 enemies', function () {
-    var g = this.g = new Game({
+    var g = this.g = new Game();
+    g.start({
       width: 100, 
       height: 100, 
       background: "black", 
       enemies: 0
     });
-    g.c.entities.all(Robot).length.should.equal(0);
+    g.c.entities.all(g.Robot).length.should.equal(0);
   });
 });
 
 describe('Game Controls', function () {
-  beforeEach(function() {
-    this.originalControls = Person.prototype.controls;
-  });
-
-  afterEach(function(done) {
-    Person.prototype.controls = this.originalControls;
+  afterEach(function() {
     this.g.c.ticker.stop(); // stop the current game instance
-    requestAnimationFrame(function() {
-      done(); // let queued functions clear before continuing tests
-    });
   });
 
   it('should run key function continuously when down', function (done) {
+    var g = this.g = new Game();
     var times = 0;
-    Person.prototype.controls = {
+    g.Person.prototype.controls = {
       'A': function() { times++; }
     };
-    var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+    g.start({width: 100, height: 100, background: "black", enemies: 1});
     g.c.inputter._buttonListener._down(g.c.inputter.A);
     setTimeout(function() {
       g.c.ticker.stop();
@@ -77,11 +70,12 @@ describe('Game Controls', function () {
   });
 
   it('should not run key function when up', function (done) {
+    var g = this.g = new Game();
     var times = 0;
-    Person.prototype.controls = {
+    g.Person.prototype.controls = {
       'A': function() { times++; }
     };
-    var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+    g.start({width: 100, height: 100, background: "black", enemies: 1});
     setTimeout(function() {
       times.should.equal(0);
       done();
@@ -89,15 +83,16 @@ describe('Game Controls', function () {
   });
 
   it('should run down function continuously when down', function (done) {
+    var g = this.g = new Game();
     var up = 0;
     var down = 0;
-    Person.prototype.controls = {
+    g.Person.prototype.controls = {
       'A': {
         down: function() { down++; },
         up: function() { up++; }
       }
     };
-    var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+    g.start({width: 100, height: 100, background: "black", enemies: 1});
     g.c.inputter._buttonListener._down(g.c.inputter.A);
     setTimeout(function() {
       g.c.ticker.stop();
@@ -108,15 +103,16 @@ describe('Game Controls', function () {
   });
 
   it('should run up function continuously when up', function (done) {
+    var g = this.g = new Game();
     var up = 0;
     var down = 0;
-    Person.prototype.controls = {
+    g.Person.prototype.controls = {
       'A': {
         down: function() { down++; },
         up: function() { up++; }
       }
     };
-    var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+    g.start({width: 100, height: 100, background: "black", enemies: 1});
     setTimeout(function() {
       up.should.be.greaterThan(1);
       down.should.equal(0);
@@ -125,19 +121,20 @@ describe('Game Controls', function () {
   });
 
   it('should run pressed function once when down', function (done) {
+    var g = this.g = new Game();
     var times = 0;
-    Person.prototype.controls = {
+    g.Person.prototype.controls = {
       'A': {
         pressed: function() { times++; }
       }
     };
     var ticks = 0;
-    var update = Person.prototype.update;
-    Person.prototype.update = function () {
+    var update = g.Person.prototype.update;
+    g.Person.prototype.update = function () {
       ticks++;
       update.apply(this);
     };
-    var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+    g.start({width: 100, height: 100, background: "black", enemies: 1});
     g.c.inputter._buttonListener._down(g.c.inputter.A);
     setTimeout(function() {
       times.should.equal(1);
@@ -148,20 +145,17 @@ describe('Game Controls', function () {
 });
 
 describe('Color Tutorial', function(){
-  afterEach(function(done) {
+  afterEach(function() {
     this.g.c.ticker.stop(); // stop the current game instance
-    requestAnimationFrame(function() {
-      done(); // let queued functions clear before continuing tests
-    });
   });
 
   it('should draw Person with alive config when alive', function (done) {
-    Person.prototype.draw = function() {
+    var g = this.g = new Game();
+    g.Person.prototype.draw = function() {
       this.color.should.equal('#00BEEF');
-      delete Person.prototype.draw;
       done();
     };
-    var g = this.g = new Game({
+    g.start({
       width: 100, 
       height: 100, 
       background: "black", 
@@ -173,12 +167,12 @@ describe('Color Tutorial', function(){
   });
 
   it('should draw Person with dead config when dead', function (done) {
-    Person.prototype.draw = function() {
+    var g = this.g = new Game();
+    g.Person.prototype.draw = function() {
       this.color.should.equal('#00DEAD');
-      delete Person.prototype.draw;
       done();
     };
-    var g = this.g = new Game({
+    g.start({
       width: 100, 
       height: 100, 
       background: "black", 
@@ -187,18 +181,18 @@ describe('Color Tutorial', function(){
         colors: { alive: '#00BEEF', dead: '#00DEAD' }
       }
     });
-    g.c.entities.all(Person).forEach(function(person) {
+    g.c.entities.all(g.Person).forEach(function(person) {
       person.collision();
     });
   });
 
   it('should draw Robot with alive config when alive', function (done) {
-    Robot.prototype.draw = function() {
+    var g = this.g = new Game();
+    g.Robot.prototype.draw = function() {
       this.color.should.equal('#00BEEF');
-      delete Robot.prototype.draw;
       done();
     };
-    var g = this.g = new Game({
+    g.start({
       width: 100, 
       height: 100, 
       background: "black", 
@@ -210,12 +204,12 @@ describe('Color Tutorial', function(){
   });
 
   it('should draw Robot with dead config when dead', function (done) {
-    Robot.prototype.draw = function() {
+    var g = this.g = new Game();
+    g.Robot.prototype.draw = function() {
       this.color.should.equal('#00DEAD');
-      delete Robot.prototype.draw;
       done();
     };
-    var g = this.g = new Game({
+    g.start({
       width: 100, 
       height: 100, 
       background: "black", 
@@ -224,13 +218,14 @@ describe('Color Tutorial', function(){
         colors: { alive: '#00BEEF', dead: '#00DEAD' }
       }
     });
-    var robots = g.c.entities.all(Robot);
+    var robots = g.c.entities.all(g.Robot);
     robots[0].collision(robots[1]);
     robots[1].collision(robots[0]);
   });
 
   it('should use configured background color', function () {
-    var g = this.g = new Game({
+    var g = this.g = new Game();
+    g.start({
       width: 100, 
       height: 100, 
       background: "fuchsia", 
@@ -241,15 +236,13 @@ describe('Color Tutorial', function(){
 });
 
 describe('Graphics Tutorial', function() {
-  afterEach(function(done) {
+  afterEach(function() {
     this.g.c.ticker.stop(); // stop the current game instance
-    requestAnimationFrame(function() {
-      done(); // let queued functions clear before continuing tests
-    });
   });
 
   it('should put arbitrary player config on Person', function() {
-    var g = this.g = new Game({
+    var g = this.g = new Game();
+    g.start({
       width: 100, 
       height: 100, 
       background: "black", 
@@ -258,14 +251,15 @@ describe('Graphics Tutorial', function() {
         arbitrary: 'config'
       }
     });
-    g.c.entities.all(Person).forEach(function(entity) {
+    g.c.entities.all(g.Person).forEach(function(entity) {
       entity.should.have.property('arbitrary');
       entity.arbitrary.should.equal('config');
     });
   });
 
   it('should put arbitrary robot config on all Robots', function() {
-    var g = this.g = new Game({
+    var g = this.g = new Game();
+    g.start({
       width: 100, 
       height: 100, 
       background: "black", 
@@ -274,7 +268,7 @@ describe('Graphics Tutorial', function() {
         arbitrary: 'config'
       }
     });
-    var robots = g.c.entities.all(Robot);
+    var robots = g.c.entities.all(g.Robot);
     robots.length.should.equal(2);
     robots.forEach(function(entity) {
       entity.should.have.property('arbitrary');
@@ -283,11 +277,10 @@ describe('Graphics Tutorial', function() {
   });
 
   it('should use overwritten draw', function(done) {
-    var orig = Base.prototype.draw;
-    Base.prototype.draw = function (ctx) {
-      Base.prototype.draw = orig;
+    var g = this.g = new Game();
+    g.Base.prototype.draw = function (ctx) {
       done();
     };
-    var g = this.g = new Game({width: 100, height: 100, background: "black", enemies: 1});
+    g.start({width: 100, height: 100, background: "black", enemies: 1});
   });
 });
