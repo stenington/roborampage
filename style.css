@@ -130,3 +130,8 @@ ul {
 .hack small:before {
   content: "➜ ";
 }
+
+.help {
+  margin-bottom: 1em;
+  display: inline-block;
+}
