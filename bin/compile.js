@@ -2,11 +2,20 @@ var nunjucks = require('nunjucks');
 var glob = require('glob');
 var fs = require('fs');
 
+var CONFIG = {
+  thimble: {
+    mainId: 59304,
+    colorId: 59570,
+    graphicsId: 59702
+  }
+};
+
 var TARGET_FILES = ([
   'index.tmpl',
   'what.tmpl',
   'hacks/**/skeleton.tmpl',
-  'hacks/**/index.tmpl'
+  'hacks/**/index.tmpl',
+  'hacks/**/copypaste.tmpl'
 ]).reduce(function(prev, curr) {
   var files = glob.sync(curr);
   if (!files.length) console.warn('No files found for glob:', curr);
@@ -20,7 +29,7 @@ function compile() {
   targets.forEach(function(target) {
     var template = target.replace(/html$/, 'tmpl');
     console.log('Compiling', target);
-    fs.writeFileSync(target, nunjucks.render(template, {}));
+    fs.writeFileSync(target, nunjucks.render(template, CONFIG));
   });
 }
 

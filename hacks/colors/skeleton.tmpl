@@ -1,5 +1,11 @@
 {% extends "index.tmpl" %}
+{% if not rootPath %}
 {% set rootPath = "../../" %}
+{% endif %}
+
+{% block scripts %}
+{{ super() }}<script src="{{rootPath}}src/thimble-focus.js"></script>
+{% endblock %}
 
 {% block main %}
 <script>
