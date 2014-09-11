@@ -1,3 +1,15 @@
 {% extends "index.tmpl" %}
 {% set rootPath = "//stenington.github.io/roborampage/" %}
 
+{% block scripts -%}
+<script src="{{rootPath}}src/vendor/coquette.js"></script>
+<script src="{{rootPath}}src/thimble-focus.js"></script>
+{%- endblock %}
+
+{% block main -%}
+<script>
+{% include "src/roborampage.js" -%}
+</script>
+{{ super() }}
+{%- endblock %}
+

@@ -3,7 +3,7 @@
 {# local.tmpl and copypaste.tmpl render this with different rootPaths
    as a workaround to nunjucks leaking scope on sets #}
 
-{% block main %}
+{% block main -%}
 <script>
 function showMessage(msg) {
   var el = document.getElementById('message');
@@ -45,4 +45,4 @@ window.addEventListener('load', function() {
   });
 });
 </script>
-{% endblock %}
+{%- endblock %}

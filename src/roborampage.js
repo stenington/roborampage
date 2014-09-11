@@ -6,7 +6,7 @@ Coquette.Collider.Maths.scaleVector = function (vector, scale) {
   };
 };
 
-// Define our entity classes and base classes  
+// Define our entity classes and base classes
 function Base() {}
 
 Base.prototype.init = function (game, settings) {
@@ -82,7 +82,7 @@ Person.prototype.update = function() {
 Person.prototype.move = function() {
   if (!Coquette.Collider.Maths.magnitude(this.direction)) return;
   this.moveBy(this.direction, this.currentSpeed);
-  this.keepInBounds(); 
+  this.keepInBounds();
 };
 
 Person.prototype.collision = function(other, type) {
@@ -142,7 +142,7 @@ Robot.prototype.collision = function(other, type) {
 
 Robot.prototype.attacks = {
   direct: function directAttack() {
-    var v = Coquette.Collider.Maths.vectorTo(this.center, this.target.center);    
+    var v = Coquette.Collider.Maths.vectorTo(this.center, this.target.center);
     this.moveBy(v, this.speed.walk);
   },
   compass: function compassAttack() {
@@ -203,8 +203,8 @@ function Game(settings) {
   this.c = new Coquette(this, "canvas", this.width, this.height, this.background, true);
 
   // Our intrepid player
-  var playerDefaults = { 
-    center: { x:this.width/2, y:this.height/2 }, 
+  var playerDefaults = {
+    center: { x:this.width/2, y:this.height/2 },
     size: { x:9, y:9 },
     speed: { walk:2.4, run:3.6 },
     colors: { alive:"#2aa198", dead:"#2aa198" }

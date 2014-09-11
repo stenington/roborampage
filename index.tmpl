@@ -3,13 +3,13 @@
   {% set rootPath = "" %}
 {% endif %}
 
-{% block scripts %}
+{% block scripts -%}
 <script src="{{rootPath}}src/vendor/coquette.js"></script>
 <script src="{{rootPath}}src/roborampage.js"></script>
 <script src="{{rootPath}}src/thimble-focus.js"></script>
-{% endblock %}
+{%- endblock %}
 
-{% block content %}
+{% block content -%}
 <h1>ROBORAMPAGE</h1>
 <a class="help" href="what.html"><small>What is this?</small></a>
 <div class="container">
@@ -41,13 +41,14 @@
     <li><a href="#">Change the robot AI</a> <small>Coming soon</small></li>
   </ul>
 </section>
-{% block last %}{% endblock %}
+{% block last -%}
+{%- endblock %}
 <section class="attribution">
   <small><a href="http://coquette.maryrosecook.com/">Coquette framework</a> by Mary Rose Cook</small>
   <small>ROBORAMPAGE by <a href="https://twitter.com/stenington">@stenington</a></small>
 </section>
 
-{% block main %}
+{% block main -%}
 <script>
 function showMessage(msg) {
   var el = document.getElementById('message');
@@ -83,5 +84,5 @@ window.addEventListener('load', function() {
   });
 });
 </script>
-{% endblock %}
-{% endblock %}
+{%- endblock %}
+{%- endblock %}
