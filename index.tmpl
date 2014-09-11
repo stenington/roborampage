@@ -1,4 +1,7 @@
 {% extends "layout.tmpl" %}
+{% if not rootPath %}
+  {% set rootPath = "" %}
+{% endif %}
 
 {% block scripts %}
 <script src="{{rootPath}}src/vendor/coquette.js"></script>

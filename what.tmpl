@@ -1,4 +1,7 @@
 {% extends "layout.tmpl" %}
+{% if not rootPath %}
+  {% set rootPath = "" %}
+{% endif %}
 
 {% block title %}
 <title>What is Roborampage?</title>
