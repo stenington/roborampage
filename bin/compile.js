@@ -15,7 +15,8 @@ var TARGET_FILES = ([
   'what.tmpl',
   'hacks/**/skeleton.tmpl',
   'hacks/**/index.tmpl',
-  'hacks/**/copypaste.tmpl'
+  'hacks/**/copypaste.tmpl',
+  'hacks/**/tutorial.tmpl'
 ]).reduce(function(prev, curr) {
   var files = glob.sync(curr);
   if (!files.length) console.warn('No files found for glob:', curr);

@@ -1,127 +1,192 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<script src="../../coquette.js"></script>
-<script src="../../roborampage.js"></script>
-<link href='https://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
-<link href="../../style.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="../../thimble/vendor/codemirror/codemirror.css">
+<link rel="stylesheet" href="../../thimble/vendor/font-awesome/css/font-awesome.css">
 <style>
-  .assets img {
-    background-color: rgba(255, 0, 255, 0.5);
-  }
-</style>
-
-<h1>ROBORAMPAGE</h1>
-<div class="container">
-  <canvas id="canvas" tabindex="1"></canvas>
-  <h1 id="message"></h1>
-</div>
-<p>The robots are after you! Get them to crash before they get you.</p>
-<section class="play">
-  <h2>Play</h2>
-  <dl>
-    <dt>▲</dt>
-    <dt>◀</dt>
-    <dt>▼</dt>
-    <dt>▶</dt>
-    <dd>to move</dd>
-    <dt>Shift</dt>
-    <dd>to run</dd>
-    <dt>Space</dt>
-    <dd>to teleport</dd>
-  </dl>
-</section>
-<section class="hack">
-  <h2>Hack</h2>
-  <p>Hack the game <a href="https://thimble.webmaker.org/project/59304/remix">in Thimble</a> or follow one of these tutorials:</p>
-  <ul>
-    <li><a href="https://thimble.webmaker.org/en-US/project/59570/remix">Choose your colors</a></li>
-    <li><a href="https://thimble.webmaker.org/en-US/project/59702/remix">Add your own graphics</a></li>
-    <li><a href="#">Create player abilities</a> <small>Coming soon</small></li>
-    <li><a href="#">Change the robot AI</a> <small>Coming soon</small></li>
-  </ul>
-</section>
-<section class="assets">
-  <h2>Assets</h2>
-  <p>
-    The graphics for this example were found or adapted from artwork at <a href="http://opengameart.org/">OpenGameArt.Org</a>,
-    specifically <a href="http://opengameart.org/content/block-ninja-2d-sprites">this</a> and
-    <a href="http://opengameart.org/content/little-angry-robot-drone">this</a> resource.
-  </p>
-  <img id="player-alive" src="ninja.png">
-  <img id="player-dead" src="dead.png">
-  <img id="robot-alive" src="bot-g.gif">
-  <img id="robot-dead" src="bot-r.gif">
-</section>
-
-<section class="attribution">
-  <small><a href="http://coquette.maryrosecook.com/">Coquette framework</a> by Mary Rose Cook</small>
-  <small>ROBORAMPAGE by <a href="https://twitter.com/stenington">@stenington</a></small>
-</section>
-
-<script>
-var showHitArea = false;
-
-Base.prototype.draw = function(ctx) {
-  var image = this.images['alive'];
-  if (this.dead || this.wreck) {
-    image = this.images['dead'];
-  }
-  this.padding = this.padding || {x:0, y:0};
-  var imageSize = {
-    x: this.size.x + this.padding.x,
-    y: this.size.y + this.padding.y
-  };
-  ctx.drawImage(image, 
-    this.center.x - imageSize.x / 2,
-    this.center.y - imageSize.y / 2,
-    imageSize.x,
-    imageSize.y);
-  if (showHitArea) {
-    ctx.fillStyle = "rgba(255, 0, 255, 0.5)";
-    ctx.fillRect(this.center.x - this.size.x / 2,
-      this.center.y - this.size.y / 2,
-      this.size.x,
-      this.size.y);
-  }
-};
-
-function showMessage(msg) {
-  var el = document.getElementById('message');
-  el.style.display = "initial";
-  el.textContent = msg;
+* {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
-window.addEventListener('load', function() {
-  new Game({
-    width: 500,
-    height: 500,
-    background: "steelblue",
-    enemies: 5,
-    player: {
-      center: { x: 250, y: 250 },
-      size: { x: 32, y: 32 },
-      speed: { walk: 2.4, run: 3.6 },
-      images: {
-        alive: document.getElementById('player-alive'),
-        dead: document.getElementById('player-dead')
-      }
-    },
-    robot: {
-      size: { x: 32, y: 30 },
-      speed: { walk: 2.6 },
-      attackStrategy: 'compass',
-      waitStrategy: 'roam',
-      images: {
-        alive: document.getElementById('robot-alive'),
-        dead: document.getElementById('robot-dead')
-      }
-    },
-    win: function () {
-      showMessage("You win!");
-    },
-    lose: function () {
-      showMessage("You lose.");
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  font-size: 0;
+}
+
+.CodeMirror {
+  height: 100%;
+  font-size: 12px;
+}
+
+iframe {
+  border: none;
+}
+
+#tutorial {
+  width: 33%;
+}
+
+#rendering {
+  position: relative;
+  width: 33%;
+}
+
+#rendering iframe, #tutorial iframe {
+  width: 100%;
+  height: 100%;
+}
+
+#rendering iframe.invisible {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#code {
+  width: 34%;
+  position: relative;
+}
+
+#code > [role=revert] {
+  display: block;
+  z-index: 5000;
+  font-size: 14px;
+  position: absolute;
+  opacity: 0.33;
+  padding: 4px;
+  cursor: pointer;
+  top: 0;
+  right: 0;
+}
+
+#code > [role=revert]:hover {
+  opacity: 1;
+}
+
+.tutorial-highlight {
+  background-color: pink;
+}
+</style>
+<title>Tutorial Simulator</title>
+<body>
+<div id="tutorial"></div>
+<div id="code"><span role="revert"><i class="fa fa-eraser"></i></span></div>
+<div id="rendering"></div>
+<script src="../../thimble/vendor/jquery.js"></script>
+<script src="../../thimble/vendor/codemirror/codemirror.js"></script>
+<script src="../../thimble/vendor/codemirror/xml.js"></script>
+<script src="../../thimble/vendor/codemirror/css.js"></script>
+<script src="../../thimble/vendor/codemirror/javascript.js"></script>
+<script src="../../thimble/vendor/codemirror/htmlmixed.js"></script>
+<script src="../../thimble/vendor/bacon.js"></script>
+<script src="../../thimble/common.js"></script>
+<script>
+function renderInvisibleFrame(parent) {
+  return function(html) {
+    return Bacon.fromBinder(function(sink) {
+      var iframe = document.createElement('iframe');
+      var loaded = false;
+      var onLoad = function() {
+        loaded = true;
+        sink(iframe);
+        sink(new Bacon.End());
+      };
+      iframe.setAttribute('class', 'invisible');
+      parent.append(iframe);
+      iframe.addEventListener('load', onLoad, false);
+      iframe.contentDocument.open();
+      iframe.contentDocument.write(html);
+      iframe.contentDocument.close();
+      return function unsubscribe() {
+        iframe.removeEventListener('load', onLoad, false);
+        if (!loaded) $(iframe).remove();
+      };
+    });
+  };
+}
+
+function forEachLine(lines, cb) {
+  var from = lines.from - 1;
+  var to = lines.to === null ? from : lines.to - 1;
+  for (var i = from; i <= to; i++)
+    cb(i);
+}
+
+function startTutorial(editor, parent) {
+  var iframe = document.createElement('iframe');
+  iframe.setAttribute('src', 'tutorial.html');
+  parent.append(iframe);
+  window.addEventListener('message', function(event) {
+    if (event.source !== iframe.contentWindow) return;
+    var data = JSON.parse(event.data);
+    if (data.type != 'tutorial') return;
+    if (data.action == 'highlight') {
+      forEachLine(data.lines, function(line) {
+        editor.addLineClass(line, 'background', 'tutorial-highlight');
+      });
+    } else if (data.action == 'unhighlight') {
+      forEachLine(data.lines, function(line) {
+        editor.removeLineClass(line, 'background', 'tutorial-highlight');
+      });
+    } else if (data.action == 'scroll') {
+      editor.scrollIntoView({line: data.lines.from-1, ch: 0}, 50);
     }
+  }, false);
+  editor.on('change', function(instance, changeObj) {
+    iframe.contentWindow.postMessage(JSON.stringify({
+      type: 'tutorial',
+       // This doesn't seem to be used by vendor/tutorial.js, just needs
+       // to be truthy.
+      action: '???',
+      obj: changeObj
+    }), '*');
+  });
+}
+
+function startEditor(code, rendering, skeletonHTML) {
+  var initialHTML = getStorage('editorValue', skeletonHTML);
+  var htmlStream = new Bacon.Bus();
+  var editor = CodeMirror(code[0], {
+    mode: 'htmlmixed',
+    lineNumbers: true,
+    lineWrapping: true,
+    value: initialHTML
+  });
+
+  editor.on('change', function() {
+    var val = editor.getValue();
+    htmlStream.push(val);
+    setStorage('editorValue', val);
+  });
+
+  htmlStream.toProperty(initialHTML)
+    .debounce(250)
+    .flatMapLatest(renderInvisibleFrame(rendering))
+    .onValue(function(iframe) {
+      rendering.find('iframe:not(.invisible)').remove();
+      $(iframe).removeClass('invisible');
+    });
+
+  $('[role=revert]', code).on('click', function() {
+    editor.setValue(skeletonHTML);
+  });
+
+  return editor;
+}
+
+$(function() {
+  $.get('skeleton.html', function(html) {
+    var editor = startEditor($('#code'), $('#rendering'), html);
+    startTutorial(editor, $('#tutorial'));
   });
 });
 </script>
+</body>
