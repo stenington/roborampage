@@ -5,7 +5,8 @@ var fs = require('fs');
 var TARGET_FILES = ([
   'index.tmpl',
   'what.tmpl',
-  'hacks/**/skeleton.tmpl'
+  'hacks/**/skeleton.tmpl',
+  'hacks/**/index.tmpl'
 ]).reduce(function(prev, curr) {
   var files = glob.sync(curr);
   if (!files.length) console.warn('No files found for glob:', curr);

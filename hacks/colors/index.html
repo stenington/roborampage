@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../thimble/vendor/codemirror/codemirror.css">
+<link rel="stylesheet" href="../../thimble/vendor/font-awesome/css/font-awesome.css">
+<style>
+* {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  font-size: 0;
+}
+
+.CodeMirror {
+  height: 100%;
+  font-size: 12px;
+}
+
+iframe {
+  border: none;
+}
+
+#tutorial {
+  width: 33%;
+}
+
+#rendering {
+  position: relative;
+  width: 33%;
+}
+
+#rendering iframe, #tutorial iframe {
+  width: 100%;
+  height: 100%;
+}
+
+#rendering iframe.invisible {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#code {
+  width: 34%;
+  position: relative;
+}
+
+#code > [role=revert] {
+  display: block;
+  z-index: 5000;
+  font-size: 14px;
+  position: absolute;
+  opacity: 0.33;
+  padding: 4px;
+  cursor: pointer;
+  top: 0;
+  right: 0;
+}
+
+#code > [role=revert]:hover {
+  opacity: 1;
+}
+
+.tutorial-highlight {
+  background-color: pink;
+}
+</style>
+<title>Tutorial Simulator</title>
+<body>
+<div id="tutorial"></div>
+<div id="code"><span role="revert"><i class="fa fa-eraser"></i></span></div>
+<div id="rendering"></div>
+<script src="../../thimble/vendor/jquery.js"></script>
+<script src="../../thimble/vendor/codemirror/codemirror.js"></script>
+<script src="../../thimble/vendor/codemirror/xml.js"></script>
+<script src="../../thimble/vendor/codemirror/css.js"></script>
+<script src="../../thimble/vendor/codemirror/javascript.js"></script>
+<script src="../../thimble/vendor/codemirror/htmlmixed.js"></script>
+<script src="../../thimble/vendor/bacon.js"></script>
+<script src="../../thimble/common.js"></script>
+<script>
+function renderInvisibleFrame(parent) {
+  return function(html) {
+    return Bacon.fromBinder(function(sink) {
+      var iframe = document.createElement('iframe');
+      var loaded = false;
+      var onLoad = function() {
+        loaded = true;
+        sink(iframe);
+        sink(new Bacon.End());
+      };
+      iframe.setAttribute('class', 'invisible');
+      parent.append(iframe);
+      iframe.addEventListener('load', onLoad, false);
+      iframe.contentDocument.open();
+      iframe.contentDocument.write(html);
+      iframe.contentDocument.close();
+      return function unsubscribe() {
+        iframe.removeEventListener('load', onLoad, false);
+        if (!loaded) $(iframe).remove();
+      };
+    });
+  };
+}
+
+function forEachLine(lines, cb) {
+  var from = lines.from - 1;
+  var to = lines.to === null ? from : lines.to - 1;
+  for (var i = from; i <= to; i++)
+    cb(i);
+}
+
+function startTutorial(editor, parent) {
+  var iframe = document.createElement('iframe');
+  iframe.setAttribute('src', 'tutorial.html');
+  parent.append(iframe);
+  window.addEventListener('message', function(event) {
+    if (event.source !== iframe.contentWindow) return;
+    var data = JSON.parse(event.data);
+    if (data.type != 'tutorial') return;
+    if (data.action == 'highlight') {
+      forEachLine(data.lines, function(line) {
+        editor.addLineClass(line, 'background', 'tutorial-highlight');
+      });
+    } else if (data.action == 'unhighlight') {
+      forEachLine(data.lines, function(line) {
+        editor.removeLineClass(line, 'background', 'tutorial-highlight');
+      });
+    } else if (data.action == 'scroll') {
+      editor.scrollIntoView({line: data.lines.from-1, ch: 0}, 50);
+    }
+  }, false);
+  editor.on('change', function(instance, changeObj) {
+    iframe.contentWindow.postMessage(JSON.stringify({
+      type: 'tutorial',
+       // This doesn't seem to be used by vendor/tutorial.js, just needs
+       // to be truthy.
+      action: '???',
+      obj: changeObj
+    }), '*');
+  });
+}
+
+function startEditor(code, rendering, skeletonHTML) {
+  var initialHTML = getStorage('editorValue', skeletonHTML);
+  var htmlStream = new Bacon.Bus();
+  var editor = CodeMirror(code[0], {
+    mode: 'htmlmixed',
+    lineNumbers: true,
+    lineWrapping: true,
+    value: initialHTML
+  });
+
+  editor.on('change', function() {
+    var val = editor.getValue();
+    htmlStream.push(val);
+    setStorage('editorValue', val);
+  });
+
+  htmlStream.toProperty(initialHTML)
+    .debounce(250)
+    .flatMapLatest(renderInvisibleFrame(rendering))
+    .onValue(function(iframe) {
+      rendering.find('iframe:not(.invisible)').remove();
+      $(iframe).removeClass('invisible');
+    });
+
+  $('[role=revert]', code).on('click', function() {
+    editor.setValue(skeletonHTML);
+  });
+
+  return editor;
+}
+
+$(function() {
+  $.get('skeleton.html', function(html) {
+    var editor = startEditor($('#code'), $('#rendering'), html);
+    startTutorial(editor, $('#tutorial'));
+  });
+});
+</script>
+</body>
