@@ -51,4 +51,5 @@ Tutorial instructions and line numbers are currently verified manually.
     * I use `cat ./copypaste.html | pbcopy` to put the contents in the clipboard.
     * Make sure you're **editing** the make, not **remixing**, before you save.
 5. For each tutorial, copy/paste the contents of `hacks/<name>/copypaste.html` into the corresponding Thimble make, and save.
+    * When you paste the new content in, the tutorial line numbers *will change*! Save and refresh before confirming line numbers.
 
