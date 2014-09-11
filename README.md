@@ -42,6 +42,8 @@ for the game code.
 
 Tutorial instructions and line numbers are currently verified manually.
 
+`precommit-hook` is used with `bin/validate.sh` to prevent committing mismatched template/output files.
+
 ### Deployment
 
 1. Run `node bin/compile.js` to ensure all templates have been rendered.
