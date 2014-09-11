@@ -13,7 +13,7 @@
   "scripts": {
     "test": "echo \"Run bin/server.js and visit localhost:3000/test/\" && exit 1",
     "compile": "node bin/compile.js",
-    "validate": "node bin/compile.js; git diff --exit-code"
+    "validate": "bin/validate.sh"
   },
   "precommit": ["validate"],
   "repository": {
