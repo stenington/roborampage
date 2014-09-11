@@ -5,12 +5,17 @@
   "dependencies": {
     "glob": "~4.0.5",
     "express": "~4.9.0",
-    "nunjucks": "~1.0.7"
+    "nunjucks": "~1.0.7",
+    "jshint": "~2.5.5",
+    "precommit-hook": "~1.0.7"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Run bin/server.js and visit localhost:3000/test/\" && exit 1"
+    "test": "echo \"Run bin/server.js and visit localhost:3000/test/\" && exit 1",
+    "compile": "node bin/compile.js",
+    "validate": "node bin/compile.js; git diff --exit-code"
   },
+  "precommit": ["validate"],
   "repository": {
     "type": "git",
     "url": "git://github.com/stenington/roborampage.git"
