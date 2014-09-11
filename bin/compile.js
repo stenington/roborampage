@@ -13,10 +13,11 @@ var CONFIG = {
 var TARGET_FILES = ([
   'index.tmpl',
   'what.tmpl',
-  'hacks/**/skeleton.tmpl',
+  'copypaste.tmpl',
   'hacks/**/index.tmpl',
-  'hacks/**/copypaste.tmpl',
-  'hacks/**/tutorial.tmpl'
+  'hacks/**/tutorial.tmpl',
+  'hacks/**/local.tmpl',
+  'hacks/**/copypaste.tmpl'
 ]).reduce(function(prev, curr) {
   var files = glob.sync(curr);
   if (!files.length) console.warn('No files found for glob:', curr);
@@ -30,7 +31,8 @@ function compile() {
   targets.forEach(function(target) {
     var template = target.replace(/html$/, 'tmpl');
     console.log('Compiling', target);
-    fs.writeFileSync(target, nunjucks.render(template, CONFIG));
+    var html = (new nunjucks.Environment(new nunjucks.FileSystemLoader('.', true))).render(template, CONFIG);
+    fs.writeFileSync(target, html);
   });
 }
 

@@ -1,7 +1,7 @@
 {% extends "index.tmpl" %}
-{% if not rootPath %}
-{% set rootPath = "../../" %}
-{% endif %}
+
+{# local.tmpl and copypaste.tmpl render this with different rootPaths
+   as a workaround to nunjucks leaking scope on sets #}
 
 {% block scripts %}
 {{ super() }}<script src="{{rootPath}}src/thimble-focus.js"></script>

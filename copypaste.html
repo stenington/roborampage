@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link href='https://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
+<link href="//stenington.github.io/roborampage/src/style.css" rel="stylesheet" type="text/css">
+<title>Roborampage</title>
+<script src="//stenington.github.io/roborampage/src/vendor/coquette.js"></script>
+<script src="//stenington.github.io/roborampage/src/roborampage.js"></script>
+
+<a href="https://github.com/stenington/roborampage"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
+
+<h1>ROBORAMPAGE</h1>
+<a class="help" href="what.html"><small>What is this?</small></a>
+<div class="container">
+  <canvas id="canvas" tabindex="1"></canvas>
+  <h1 id="message"></h1>
+</div>
+<p>The robots are after you! Get them to crash before they get you.</p>
+<section class="play">
+  <h2>Play It</h2>
+  <dl>
+    <dt>▲</dt>
+    <dt>◀</dt>
+    <dt>▼</dt>
+    <dt>▶</dt>
+    <dd>to move</dd>
+    <dt>Shift</dt>
+    <dd>to run</dd>
+    <dt>Space</dt>
+    <dd>to teleport</dd>
+  </dl>
+</section>
+<section class="hack" id="hack">
+  <h2>Hack It</h2>
+  <p>Hack the game <a href="https://thimble.webmaker.org/project/59304/remix">in Thimble</a> or follow one of these tutorials:</p>
+  <ul>
+    <li><a href="https://thimble.webmaker.org/en-US/project/59570/remix">Choose your colors</a></li>
+    <li><a href="https://thimble.webmaker.org/en-US/project/59702/remix">Add your own graphics</a></li>
+    <li><a href="#">Create player abilities</a> <small>Coming soon</small></li>
+    <li><a href="#">Change the robot AI</a> <small>Coming soon</small></li>
+  </ul>
+</section>
+
+<section class="attribution">
+  <small><a href="http://coquette.maryrosecook.com/">Coquette framework</a> by Mary Rose Cook</small>
+  <small>ROBORAMPAGE by <a href="https://twitter.com/stenington">@stenington</a></small>
+</section>
+
+
+<script>
+function showMessage(msg) {
+  var el = document.getElementById('message');
+  el.style.display = "initial";
+  el.textContent = msg;
+}
+
+window.addEventListener('load', function() {
+  new Game({
+    width: 500,
+    height: 500,
+    background: "#002b36",
+    enemies: 10,
+    player: {
+      center: { x: 250, y: 250 },
+      size: { x: 9, y: 9 },
+      speed: { walk: 2.4, run: 3.6 },
+      colors: { alive: "#2aa198", dead: "#2aa198" }
+    },
+    robot: {
+      size: { x: 9, y: 9 },
+      speed: { walk: 2.6 },
+      attackStrategy: 'compass',
+      waitStrategy: 'roam',
+      colors: { alive: "#d33682", dead:  "#dc322f" },
+    },
+    win: function () {
+      showMessage("You win!");
+    },
+    lose: function () {
+      showMessage("You lose.");
+    }
+  });
+});
+</script>
+
+

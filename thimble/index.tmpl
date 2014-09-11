@@ -183,7 +183,7 @@ function startEditor(code, rendering, skeletonHTML) {
 }
 
 $(function() {
-  $.get('skeleton.html', function(html) {
+  $.get('local.html', function(html) {
     var editor = startEditor($('#code'), $('#rendering'), html);
     startTutorial(editor, $('#tutorial'));
   });
